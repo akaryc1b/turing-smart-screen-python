@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import json
-import os
 import tempfile
 import unittest
 from pathlib import Path
@@ -14,6 +13,20 @@ from library.i18n import (
     normalize_locale,
     resolve_locale,
 )
+
+
+REAL_LOCALES_DIR = Path(__file__).resolve().parents[1] / "locales"
+
+
+def flatten_keys(values, prefix=""):
+    keys = set()
+    for key, value in values.items():
+        full_key = f"{prefix}.{key}" if prefix else key
+        if isinstance(value, dict):
+            keys.update(flatten_keys(value, full_key))
+        else:
+            keys.add(full_key)
+    return keys
 
 
 class NormalizeLocaleTests(unittest.TestCase):
@@ -105,6 +118,30 @@ class TranslatorTests(unittest.TestCase):
     def test_invalid_format_arguments_do_not_crash_the_ui(self):
         translator = Translator("en_US", locales_dir=self.locales_dir)
         self.assertEqual("Welcome, {name}!", translator("message.welcome", unexpected="value"))
+
+
+class RealCatalogTests(unittest.TestCase):
+    def load_catalog(self, locale_code):
+        path = REAL_LOCALES_DIR / f"{locale_code}.json"
+        with path.open(encoding="utf-8") as stream:
+            return json.load(stream)
+
+    def test_chinese_catalog_covers_every_english_key(self):
+        english_keys = flatten_keys(self.load_catalog("en_US"))
+        chinese_keys = flatten_keys(self.load_catalog("zh_CN"))
+        self.assertEqual(english_keys, chinese_keys)
+
+    def test_configurator_core_labels_are_translated(self):
+        translator = Translator("zh_CN", locales_dir=REAL_LOCALES_DIR)
+        self.assertEqual("显示屏配置", translator("config.display_section"))
+        self.assertEqual("硬件监控方式", translator("config.hardware_monitoring"))
+        self.assertEqual("天气与 Ping 配置", translator("weather.window_title"))
+        self.assertEqual("简体中文", translator("language.chinese_simplified"))
+
+    def test_real_catalog_named_placeholders_render(self):
+        translator = Translator("zh_CN", locales_dir=REAL_LOCALES_DIR)
+        self.assertEqual("作者：@tester", translator("config.author", name="@tester"))
+        self.assertIn("401", translator("weather.error_http", status=401))
 
 
 if __name__ == "__main__":
