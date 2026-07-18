@@ -32,6 +32,8 @@ check_python_version()
 import os
 import sys
 
+from library.i18n import set_language, tr
+
 try:
     import atexit
     import locale
@@ -52,10 +54,8 @@ try:
     from library.display import display
 
 except Exception as e:
-    print("""Import error: %s
-Please follow start guide to install required packages: https://github.com/mathoudebine/turing-smart-screen-python/wiki/System-monitor-:-how-to-start
-Or the troubleshooting page: https://github.com/mathoudebine/turing-smart-screen-python/wiki/Troubleshooting#all-os-tkinter-dependency-not-installed""" % str(
-        e))
+    print(tr("error.import", error=str(e)))
+    print(tr("error.import_help"))
     try:
         sys.exit(0)
     except:
@@ -66,6 +66,10 @@ try:
 except:
     # If pystray cannot be loaded do not stop the program, just ignore it. The tray icon will not be displayed.
     pass
+
+from library import config as app_config
+
+set_language(app_config.CONFIG_DATA.get("config", {}).get("LANGUAGE", "auto"))
 
 MAIN_DIRECTORY = Path(__file__).resolve().parent
 
@@ -88,6 +92,7 @@ if __name__ == "__main__":
 
         logger.debug("(Waited %.1fs)" % wait_time)
 
+
     def clean_stop(tray_icon=None):
         # Turn screen and LEDs off before stopping
         display.turn_off()
@@ -109,9 +114,11 @@ if __name__ == "__main__":
         except:
             os._exit(0)
 
+
     def on_signal_caught(signum, frame=None):
         logger.info("Caught signal %d, exiting" % signum)
         clean_stop()
+
 
     def on_configure_tray(tray_icon, item):
         logger.info("Configure from tray icon")
@@ -129,6 +136,7 @@ if __name__ == "__main__":
                 subprocess.Popen([str(configure_file)])
 
         clean_stop(tray_icon)
+
 
     def on_exit_tray(tray_icon, item):
         logger.info("Exit from tray icon")
@@ -151,7 +159,6 @@ if __name__ == "__main__":
 
         def on_win32_wm_event(hWnd, msg, wParam, lParam):
             """Handle Windows window message events (like ENDSESSION, CLOSE, DESTROY)."""
-            logger.debug("Caught Windows window message event %s" % msg)
             if msg == win32con.WM_POWERBROADCAST:
                 # WM_POWERBROADCAST is used to detect computer going to/resuming from sleep
                 if wParam == win32con.PBT_APMSUSPEND:
@@ -171,16 +178,16 @@ if __name__ == "__main__":
     # Create a tray icon for the program, with an Exit entry in menu
     try:
         tray_icon = pystray.Icon(
-            name='Turing System Monitor',
-            title='Turing System Monitor',
+            name=tr("app.name"),
+            title=tr("app.name"),
             icon=Image.open(MAIN_DIRECTORY / "res/icons/monitor-icon-17865/64.png"),
             menu=pystray.Menu(
                 pystray.MenuItem(
-                    text='Configure',
+                    text=tr("common.configure"),
                     action=on_configure_tray),
                 pystray.Menu.SEPARATOR,
                 pystray.MenuItem(
-                    text='Exit',
+                    text=tr("common.exit"),
                     action=on_exit_tray)
             )
         )
@@ -259,31 +266,10 @@ if __name__ == "__main__":
         wndclass.lpszClassName = "turingEventWndClass"
         messageMap = {win32con.WM_QUERYENDSESSION: on_win32_wm_event,
                       win32con.WM_ENDSESSION: on_win32_wm_event,
-                      win32con.WM_QUIT: on_win32_wm_event,
-                      win32con.WM_DESTROY: on_win32_wm_event,
                       win32con.WM_CLOSE: on_win32_wm_event,
+                      win32con.WM_DESTROY: on_win32_wm_event,
                       win32con.WM_POWERBROADCAST: on_win32_wm_event}
-
         wndclass.lpfnWndProc = messageMap
-
-        try:
-            myWindowClass = win32gui.RegisterClass(wndclass)
-            hwnd = win32gui.CreateWindowEx(win32con.WS_EX_LEFT,
-                                           myWindowClass,
-                                           "turingEventWnd",
-                                           0,
-                                           0,
-                                           0,
-                                           win32con.CW_USEDEFAULT,
-                                           win32con.CW_USEDEFAULT,
-                                           0,
-                                           0,
-                                           hinst,
-                                           None)
-            while True:
-                # Receive and dispatch window messages
-                win32gui.PumpWaitingMessages()
-                time.sleep(0.5)
-
-        except Exception as e:
-            logger.error("Exception while creating event window: %s" % str(e))
+        wndclassAtom = win32gui.RegisterClass(wndclass)
+        hwnd = win32gui.CreateWindowEx(0, wndclassAtom, "turingEventWnd", 0, 0, 0, 0, 0, 0, 0, hinst, None)
+        win32gui.PumpMessages()
