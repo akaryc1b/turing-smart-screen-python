@@ -15,7 +15,13 @@
     "search": "搜索",
     "exit": "退出",
     "configure": "配置",
-    "language": "界面语言"
+    "language": "语言"
+  },
+  "language": {
+    "auto": "跟随系统语言",
+    "english": "英文",
+    "chinese_simplified": "简体中文",
+    "restart_hint": "语言更改将在重新打开此窗口后生效"
   },
   "config": {
     "display_section": "显示屏配置",
@@ -31,6 +37,7 @@
     "ethernet_interface": "有线网卡",
     "wifi_interface": "Wi-Fi 网卡",
     "cpu_fan": "CPU 风扇（？）",
+    "interface_language": "界面语言",
     "restart_as_admin": "❌ 请以管理员身份重新启动，或选择其他硬件监控方式",
     "weather_and_ping": "天气\n与 Ping",
     "open_themes_folder": "打开主题\n文件夹",
@@ -45,6 +52,10 @@
     "kipye": "奇叶智能显示屏",
     "weact": "WeAct Studio Display FS V1",
     "simulated": "模拟显示屏"
+  },
+  "size": {
+    "new_revision": "{size}（V1.X 新硬件版本）",
+    "round_new_revision": "{size} 圆形屏（V1.X 新硬件版本）"
   },
   "option": {
     "orientation_classic": "正常",
