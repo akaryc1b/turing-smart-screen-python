@@ -109,7 +109,9 @@
   },
   "error": {
     "import": "Import error: {error}",
+    "import_help": "Please follow the start guide to install the required packages, or see the troubleshooting page.",
     "tkinter_missing": "[ERROR] Tkinter dependency is not installed.",
+    "tkinter_help": "Please install Tkinter using the project's troubleshooting instructions.",
     "theme_invalid": "Error in theme: {error}"
   }
 }
