@@ -30,7 +30,19 @@ jobs:
           python-version: '3.11'
 
       - name: Apply configurator localization
-        run: python tools/apply_configurator_localization.py
+        id: apply
+        continue-on-error: true
+        run: python tools/apply_configurator_localization.py > migration-error.log 2>&1
+
+      - name: Persist migration diagnostics
+        if: steps.apply.outcome == 'failure'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add migration-error.log
+          git commit -m "chore: capture configurator migration failure [skip ci]"
+          git push origin HEAD:${BRANCH_NAME}
+          exit 1
 
       - name: Validate Python syntax
         run: python -m py_compile library/i18n.py configure.py tests/test_i18n.py
