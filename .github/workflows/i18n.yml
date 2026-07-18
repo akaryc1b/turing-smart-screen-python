@@ -1,0 +1,52 @@
+name: Localization
+
+on:
+  pull_request:
+    paths:
+      - 'library/i18n.py'
+      - 'locales/**'
+      - 'tests/test_i18n.py'
+      - '.github/workflows/i18n.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'library/i18n.py'
+      - 'locales/**'
+      - 'tests/test_i18n.py'
+      - '.github/workflows/i18n.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Validate Python syntax
+        run: python -m py_compile library/i18n.py tests/test_i18n.py
+
+      - name: Run localization unit tests
+        run: python -m unittest tests.test_i18n -v
+
+      - name: Validate translation catalogs
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          for catalog in sorted(Path('locales').glob('*.json')):
+              with catalog.open(encoding='utf-8') as stream:
+                  data = json.load(stream)
+              if not isinstance(data, dict):
+                  raise SystemExit(f'{catalog} must contain a JSON object')
+              print(f'Validated {catalog}')
+          PY
