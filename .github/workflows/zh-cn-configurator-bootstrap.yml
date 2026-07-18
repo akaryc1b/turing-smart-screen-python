@@ -32,7 +32,7 @@ jobs:
       - name: Apply configurator localization
         id: apply
         continue-on-error: true
-        run: python tools/apply_configurator_localization.py > migration-error.log 2>&1
+        run: python tools/run_configurator_localization.py > migration-error.log 2>&1
 
       - name: Persist migration diagnostics
         if: steps.apply.outcome == 'failure'
