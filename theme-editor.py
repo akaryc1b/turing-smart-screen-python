@@ -33,21 +33,23 @@ import subprocess
 import sys
 import time
 
+from library.i18n import set_language, tr
+
 try:
     import tkinter
     from PIL import ImageTk, Image
 except:
-    print(
-        "[ERROR] Tkinter dependency not installed. Please follow troubleshooting page: https://github.com/mathoudebine/turing-smart-screen-python/wiki/Troubleshooting#all-os-tkinter-dependency-not-installed")
+    print(tr("error.tkinter_missing"))
+    print(tr("error.tkinter_help"))
     try:
         sys.exit(0)
     except:
         os._exit(0)
 
 if len(sys.argv) != 2:
-    print("Usage :")
+    print(tr("theme_editor.usage"))
     print("        theme-editor.py theme-name")
-    print("Examples : ")
+    print(tr("theme_editor.examples"))
     print("        theme-editor.py 3.5inchTheme2")
     print("        theme-editor.py Landscape6Grid")
     print("        theme-editor.py Cyberpunk")
@@ -66,6 +68,8 @@ logger.setLevel(logging.DEBUG)
 
 # Hardcode specific configuration for theme editor
 from library import config
+
+set_language(config.CONFIG_DATA.get("config", {}).get("LANGUAGE", "auto"))
 
 config.CONFIG_DATA["config"]["HW_SENSORS"] = "STATIC"  # For theme editor always use stub data
 config.CONFIG_DATA["config"]["THEME"] = sys.argv[1]  # Theme is given as argument
@@ -174,10 +178,11 @@ if __name__ == "__main__":
         elif y1 >= display_height:
             y1 = display_height - 1
 
-        label_coord.config(text='Drawing zone from [{:0.0f},{:0.0f}] to [{:0.0f},{:0.0f}]'.format(x0 * RESIZE_FACTOR,
-                                                                                                  y0 * RESIZE_FACTOR,
-                                                                                                  x1 * RESIZE_FACTOR,
-                                                                                                  y1 * RESIZE_FACTOR))
+        label_coord.config(text=tr("theme_editor.drawing_zone",
+                                   x0=x0 * RESIZE_FACTOR,
+                                   y0=y0 * RESIZE_FACTOR,
+                                   x1=x1 * RESIZE_FACTOR,
+                                   y1=y1 * RESIZE_FACTOR))
         draw_zone(x0, y0, x1, y1)
 
 
@@ -205,15 +210,16 @@ if __name__ == "__main__":
             width = max(x0, x1) - min(x0, x1)
             height = max(y0, y1) - min(y0, y1)
 
-            label_coord.config(text='Zone: X={:0.0f}, Y={:0.0f}, width={:0.0f} height={:0.0f}'.format(x * RESIZE_FACTOR,
-                                                                                                      y * RESIZE_FACTOR,
-                                                                                                      width * RESIZE_FACTOR,
-                                                                                                      height * RESIZE_FACTOR))
+            label_coord.config(text=tr("theme_editor.zone",
+                                       x=x * RESIZE_FACTOR,
+                                       y=y * RESIZE_FACTOR,
+                                       width=width * RESIZE_FACTOR,
+                                       height=height * RESIZE_FACTOR))
         else:
             # Display click coordinates
-            label_coord.config(
-                text='X={:0.0f}, Y={:0.0f} (click and drag to draw a zone)'.format(x0 * RESIZE_FACTOR,
-                                                                                   y0 * RESIZE_FACTOR))
+            label_coord.config(text=tr("theme_editor.point",
+                                       x=x0 * RESIZE_FACTOR,
+                                       y=y0 * RESIZE_FACTOR))
 
 
     def on_zone_click(event):
@@ -274,7 +280,7 @@ if __name__ == "__main__":
         # Create preview window
         logger.debug("Opening theme preview window with static data")
         viewer = tkinter.Tk()
-        viewer.title("Turing SysMon Theme Editor")
+        viewer.title(tr("app.theme_editor_title"))
         viewer.iconphoto(True, tkinter.PhotoImage(file=config.MAIN_DIRECTORY / "res/icons/monitor-icon-17865/64.png"))
         viewer.geometry(str(display_width + 2 * RGB_LED_MARGIN) + "x" + str(display_height + 2 * RGB_LED_MARGIN + 80))
         viewer.protocol("WM_DELETE_WINDOW", on_closing)
@@ -312,19 +318,19 @@ if __name__ == "__main__":
         # Allow to resize editor using mouse wheel or buttons
         viewer.bind_all("<MouseWheel>", on_mousewheel)
 
-        zoom_plus_btn = tkinter.Button(viewer, text="Zoom +", command=lambda: on_zoom_plus())
+        zoom_plus_btn = tkinter.Button(viewer, text=tr("theme_editor.zoom_in"), command=lambda: on_zoom_plus())
         zoom_plus_btn.place(x=RGB_LED_MARGIN, y=display_height + 2 * RGB_LED_MARGIN, height=30,
                             width=int(display_width / 2))
 
-        zoom_minus_btn = tkinter.Button(viewer, text="Zoom -", command=lambda: on_zoom_minus())
+        zoom_minus_btn = tkinter.Button(viewer, text=tr("theme_editor.zoom_out"), command=lambda: on_zoom_minus())
         zoom_minus_btn.place(x=int(display_width / 2) + RGB_LED_MARGIN, y=display_height + 2 * RGB_LED_MARGIN,
                              height=30, width=int(display_width / 2))
 
-        label_coord = tkinter.Label(viewer, text="Click or draw a zone to show coordinates")
+        label_coord = tkinter.Label(viewer, text=tr("theme_editor.coordinate_hint"))
         label_coord.place(x=0, y=display_height + 2 * RGB_LED_MARGIN + 40,
                           width=display_width + 2 * RGB_LED_MARGIN)
 
-        label_info = tkinter.Label(viewer, text="This preview will reload when theme file is updated")
+        label_info = tkinter.Label(viewer, text=tr("theme_editor.reload_hint"))
         label_info.place(x=0, y=display_height + 2 * RGB_LED_MARGIN + 60,
                          width=display_width + 2 * RGB_LED_MARGIN)
 
