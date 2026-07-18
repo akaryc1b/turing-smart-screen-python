@@ -1,5 +1,11 @@
 ---
 config:
+  # User-interface language:
+  # - auto   follow TURING_LANGUAGE / operating-system locale
+  # - en_US  English
+  # - zh_CN  Simplified Chinese
+  LANGUAGE: auto
+
   # Configuration values to set up basic communication
   # Set your COM port e.g. COM3 for Windows, /dev/ttyACM0 for Linux...
   # Use AUTO for COM port auto-discovery (may not work on every setup) or if device is not detected as a COM port
