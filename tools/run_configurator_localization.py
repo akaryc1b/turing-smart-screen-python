@@ -21,9 +21,9 @@ def main() -> None:
 
     # Keep existing path constants at their original location. Language
     # detection only needs a direct config path before localized maps are built.
-    inserted_path_constants = '''        "MAIN_DIRECTORY = Path(__file__).resolve().parent\n"
-        "THEMES_DIR = MAIN_DIRECTORY / \\"res/themes\\"\n"
-        "VERSION_FILE = MAIN_DIRECTORY / \\"version.txt\\"\n\n\n"
+    inserted_path_constants = r'''        "MAIN_DIRECTORY = Path(__file__).resolve().parent\n"
+        "THEMES_DIR = MAIN_DIRECTORY / \"res/themes\"\n"
+        "VERSION_FILE = MAIN_DIRECTORY / \"version.txt\"\n\n\n"
 '''
     text = replace_source_once(text, inserted_path_constants, "")
     text = replace_source_once(
@@ -32,11 +32,11 @@ def main() -> None:
         '        "        with open(Path(__file__).resolve().parent / \\"config.yaml\\", \\"rt\\", encoding=\\"utf8\\") as stream:\\n"',
     )
 
-    duplicate_path_removal = '''    text = replace_once(
+    duplicate_path_removal = r'''    text = replace_once(
         text,
         "MAIN_DIRECTORY = Path(__file__).resolve().parent\n"
-        "THEMES_DIR = MAIN_DIRECTORY / \\"res/themes\\"\n"
-        "VERSION_FILE = MAIN_DIRECTORY / \\"version.txt\\"\n\n",
+        "THEMES_DIR = MAIN_DIRECTORY / \"res/themes\"\n"
+        "VERSION_FILE = MAIN_DIRECTORY / \"version.txt\"\n\n",
         "",
     )
 
