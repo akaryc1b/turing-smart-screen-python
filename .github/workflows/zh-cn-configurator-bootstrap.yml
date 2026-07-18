@@ -34,14 +34,19 @@ jobs:
         continue-on-error: true
         run: python tools/run_configurator_localization.py > migration-error.log 2>&1
 
-      - name: Persist migration diagnostics
+      - name: Upload migration diagnostics
+        if: steps.apply.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: configurator-migration-error
+          path: migration-error.log
+          if-no-files-found: error
+          retention-days: 1
+
+      - name: Stop after migration failure
         if: steps.apply.outcome == 'failure'
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add migration-error.log
-          git commit -m "chore: capture configurator migration failure [skip ci]"
-          git push origin HEAD:${BRANCH_NAME}
+          cat migration-error.log
           exit 1
 
       - name: Validate Python syntax
