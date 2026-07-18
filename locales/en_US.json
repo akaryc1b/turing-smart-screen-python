@@ -17,6 +17,12 @@
     "configure": "Configure",
     "language": "Language"
   },
+  "language": {
+    "auto": "Follow system language",
+    "english": "English",
+    "chinese_simplified": "Simplified Chinese",
+    "restart_hint": "Language changes apply after restarting this window"
+  },
   "config": {
     "display_section": "Display configuration",
     "system_monitor_section": "System Monitor Configuration",
@@ -31,6 +37,7 @@
     "ethernet_interface": "Ethernet interface",
     "wifi_interface": "Wi-Fi interface",
     "cpu_fan": "CPU fan (?)",
+    "interface_language": "Interface language",
     "restart_as_admin": "❌ Restart as administrator or select another hardware monitoring method",
     "weather_and_ping": "Weather\n& Ping",
     "open_themes_folder": "Open themes\nfolder",
@@ -45,6 +52,10 @@
     "kipye": "Kipye Qiye Smart Display",
     "weact": "WeAct Studio Display FS V1",
     "simulated": "Simulated screen"
+  },
+  "size": {
+    "new_revision": "{size} (V1.X new hardware revision)",
+    "round_new_revision": "{size} round (V1.X new hardware revision)"
   },
   "option": {
     "orientation_classic": "classic",
