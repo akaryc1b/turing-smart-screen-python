@@ -83,7 +83,9 @@ class ReleaseCandidateManifestTests(unittest.TestCase):
             *common,
         )
 
-    def _create_archive(self, filename, archive_type, platform_name, extra=()):
+    def _create_archive(
+        self, filename, archive_type, platform_name, extra=(), version_text=TEST_VERSION
+    ):
         path = self.root / filename
         members = [
             f"turing-system-monitor/{relative_path}"
@@ -93,14 +95,20 @@ class ReleaseCandidateManifestTests(unittest.TestCase):
         if archive_type == "zip":
             with zipfile.ZipFile(path, "w") as archive:
                 for member in members:
-                    archive.writestr(member, b"payload")
+                    payload = (
+                        version_text.encode()
+                        if member.endswith("/version.txt")
+                        else b"payload"
+                    )
+                    archive.writestr(member, payload)
         else:
             source = self.root / "tar-source"
             shutil.rmtree(source, ignore_errors=True)
             for member in members:
                 target = source / member
                 target.parent.mkdir(parents=True, exist_ok=True)
-                target.write_bytes(b"payload")
+                payload = version_text.encode() if member.endswith("/version.txt") else b"payload"
+                target.write_bytes(payload)
             with tarfile.open(path, "w:gz") as archive:
                 archive.add(source / "turing-system-monitor", arcname="turing-system-monitor")
         return path
@@ -114,6 +122,11 @@ class ReleaseCandidateManifestTests(unittest.TestCase):
                 filename,
                 archive_type,
                 contract["platform"],
+                version_text=(
+                    f"{TEST_VERSION}-debug"
+                    if kind == "windows-debug-portable"
+                    else TEST_VERSION
+                ),
             )
         else:
             artifact = self.root / filename
@@ -162,6 +175,27 @@ class ReleaseCandidateManifestTests(unittest.TestCase):
                 version=TEST_VERSION,
                 commit=TEST_COMMIT,
                 python_version="3.13.5",
+                catalog_dir=self.catalog_dir,
+                theme_path=self.theme_dir / "theme.yaml",
+            )
+
+    def test_archive_with_wrong_packaged_version_is_rejected(self):
+        filename = ARTIFACT_KINDS["linux-release-archive"]["filename"].format(
+            version=TEST_VERSION
+        )
+        artifact = self._create_archive(
+            filename,
+            "tar.gz",
+            "linux",
+            version_text="9.9.9",
+        )
+        with self.assertRaisesRegex(ReleaseManifestError, "version mismatch"):
+            build_entry(
+                artifact=artifact,
+                kind="linux-release-archive",
+                version=TEST_VERSION,
+                commit=TEST_COMMIT,
+                python_version="3.14.0",
                 catalog_dir=self.catalog_dir,
                 theme_path=self.theme_dir / "theme.yaml",
             )
