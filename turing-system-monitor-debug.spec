@@ -1,12 +1,14 @@
 # -*- mode: python ; coding: utf-8 -*-
 
+COMMON_DATAS = [('res', 'res'), ('locales', 'locales'), ('config.yaml', '.'), ('external', 'external')]
+
 # Configuration Wizard
 
 configure_a = Analysis(
     ['configure.py'],
     pathex=[],
     binaries=[],
-    datas=[('res', 'res'), ('config.yaml', '.'), ('external', 'external')],
+    datas=COMMON_DATAS,
     hiddenimports=['PIL', 'PIL._imagingtk', 'PIL._tkinter_finder'],
     hookspath=[],
     hooksconfig={},
@@ -44,7 +46,7 @@ main_a = Analysis(
     ['main.py'],
     pathex=[],
     binaries=[],
-    datas=[('res', 'res'), ('config.yaml', '.'), ('external', 'external')],
+    datas=COMMON_DATAS,
     hiddenimports=['PIL', 'PIL._imagingtk', 'PIL._tkinter_finder'],
     hookspath=[],
     hooksconfig={},
@@ -82,7 +84,7 @@ editor_a = Analysis(
     ['theme-editor.py'],
     pathex=[],
     binaries=[],
-    datas=[('res', 'res'), ('config.yaml', '.'), ('external', 'external')],
+    datas=COMMON_DATAS,
     hiddenimports=['PIL', 'PIL._imagingtk', 'PIL._tkinter_finder'],
     hookspath=[],
     hooksconfig={},
