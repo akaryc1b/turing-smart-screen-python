@@ -99,19 +99,28 @@ class ReleaseBundleValidatorTests(unittest.TestCase):
 class ReleaseWorkflowIntegrationTests(unittest.TestCase):
     def test_release_workflows_validate_generated_bundles_before_archiving(self):
         workflows = {
-            ".github/workflows/generate-windows-packages.yml": "--platform windows",
-            ".github/workflows/generate-windows-packages-debug.yml": "--platform windows",
-            ".github/workflows/generate-linux-packages.yml": "--platform linux",
+            ".github/workflows/generate-windows-packages.yml": (
+                "--platform windows",
+                "Create portable zip archive",
+            ),
+            ".github/workflows/generate-windows-packages-debug.yml": (
+                "--platform windows",
+                "Create portable zip archive",
+            ),
+            ".github/workflows/generate-linux-packages.yml": (
+                "--platform linux",
+                "Create archive from generated binaries",
+            ),
         }
 
-        for filename, platform_argument in workflows.items():
+        for filename, (platform_argument, archive_marker) in workflows.items():
             with self.subTest(filename=filename):
                 source = (REPOSITORY_ROOT / filename).read_text(encoding="utf-8")
                 validator = "tools/validate_release_bundle.py"
                 self.assertIn(validator, source)
                 self.assertIn(platform_argument, source)
                 self.assertLess(source.index("pyinstaller"), source.index(validator))
-                self.assertLess(source.index(validator), source.index("Create archive"))
+                self.assertLess(source.index(validator), source.index(archive_marker))
 
     def test_pull_request_validation_builds_release_debug_and_linux_bundles(self):
         path = REPOSITORY_ROOT / ".github/workflows/release-bundle-validation.yml"
@@ -122,6 +131,7 @@ class ReleaseWorkflowIntegrationTests(unittest.TestCase):
         self.assertIn("windows-latest", source)
         self.assertIn("ubuntu-latest", source)
         self.assertIn("validate_release_bundle.py", source)
+        self.assertIn("Inno-Setup-Action", source)
         self.assertIn("cancel-in-progress: true", source)
 
     def test_windows_installer_offers_simplified_chinese(self):
@@ -132,6 +142,7 @@ class ReleaseWorkflowIntegrationTests(unittest.TestCase):
         self.assertIn("ChineseSimplified.isl", source)
         self.assertIn("chinesesimplified.PawnIOPageTitle", source)
         self.assertIn("{cm:PawnIOPageTitle}", source)
+        self.assertNotIn("PagePawnIO := CreateCustomPage(\n    wpInstalling,\n    'Install", source)
 
     def test_chinese_installation_guide_documents_packaged_language_override(self):
         path = REPOSITORY_ROOT / "docs/zh-CN/installation.md"
