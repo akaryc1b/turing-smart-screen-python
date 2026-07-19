@@ -1,0 +1,42 @@
+name: Temporary stage 14 core apply
+
+on:
+  push:
+    branches:
+      - agent/zh-cn-coverage-audit
+    paths:
+      - '.stage14/localization-core.tar.zst.b64'
+      - '.github/workflows/stage14-apply-temporary.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: temporary-stage14-core-apply
+  cancel-in-progress: true
+
+jobs:
+  apply-core:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out branch
+        uses: actions/checkout@v6
+        with:
+          ref: agent/zh-cn-coverage-audit
+
+      - name: Decode localization audit core
+        run: |
+          base64 --decode .stage14/localization-core.tar.zst.b64 \
+            | zstd --decompress --stdout \
+            | tar -xf -
+          git rm .stage14/localization-core.tar.zst.b64
+
+      - name: Commit localization audit core
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add tools/localization_coverage.py tests/test_localization_coverage.py
+          git commit -m 'ci: add localization coverage audit core'
+          git push origin HEAD:agent/zh-cn-coverage-audit
