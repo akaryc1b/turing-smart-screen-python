@@ -93,5 +93,29 @@ class PyInstallerSpecTests(unittest.TestCase):
                 self.assertIn(("locales", "locales"), common_datas)
 
 
+class ReleasePackagingTests(unittest.TestCase):
+    def test_release_workflows_use_catalog_enabled_specs(self):
+        workflows = {
+            ".github/workflows/generate-windows-packages.yml": "turing-system-monitor.spec",
+            ".github/workflows/generate-windows-packages-debug.yml": "turing-system-monitor-debug.spec",
+            ".github/workflows/generate-linux-packages.yml": "turing-system-monitor.spec",
+        }
+        for filename, spec_filename in workflows.items():
+            with self.subTest(filename=filename):
+                source = (REPOSITORY_ROOT / filename).read_text(encoding="utf-8")
+                self.assertIn(spec_filename, source)
+
+    def test_windows_installer_recursively_copies_locales_from_bundle(self):
+        installer_path = REPOSITORY_ROOT / "tools/windows-installer/turing-system-monitor.iss"
+        source = installer_path.read_text(encoding="utf-8")
+        program_file_rule = next(
+            line for line in source.splitlines()
+            if line.startswith('Source: "{#SourceDir}*"')
+        )
+
+        self.assertIn("recursesubdirs", program_file_rule)
+        self.assertNotIn("locales", program_file_rule.lower())
+
+
 if __name__ == "__main__":
     unittest.main()
