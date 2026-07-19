@@ -113,19 +113,10 @@ jobs:
           if (-not (Test-Path $compiler -PathType Leaf)) {
             throw "Inno Setup compiler was not found: $compiler"
           }
-          & $compiler /O+ "tools\windows-installer\turing-system-monitor.iss" 2>&1 |
-            Tee-Object -FilePath ".\inno-setup.log"
+          & $compiler /O+ "tools\windows-installer\turing-system-monitor.iss"
           if ($LASTEXITCODE -ne 0) {
             exit $LASTEXITCODE
           }
-
-      - name: Archive failed installer compiler log
-        if: failure() && matrix.kind == 'release'
-        uses: actions/upload-artifact@v7
-        with:
-          name: localized-windows-installer-compiler-log
-          path: inno-setup.log
-          if-no-files-found: warn
 
       - name: Check localized installer output
         if: matrix.kind == 'release'
