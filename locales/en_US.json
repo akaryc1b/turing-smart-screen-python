@@ -109,9 +109,9 @@
   },
   "error": {
     "import": "Import error: {error}",
-    "import_help": "Please follow the start guide to install the required packages, or see the troubleshooting page.",
+    "import_help": "Please follow the start guide to install required packages: https://github.com/mathoudebine/turing-smart-screen-python/wiki/System-monitor-:-how-to-start\nOr see the troubleshooting page: https://github.com/mathoudebine/turing-smart-screen-python/wiki/Troubleshooting#all-os-tkinter-dependency-not-installed",
     "tkinter_missing": "[ERROR] Tkinter dependency is not installed.",
-    "tkinter_help": "Please install Tkinter using the project's troubleshooting instructions.",
+    "tkinter_help": "Please install Tkinter using the project's troubleshooting instructions: https://github.com/mathoudebine/turing-smart-screen-python/wiki/Troubleshooting#all-os-tkinter-dependency-not-installed",
     "theme_invalid": "Error in theme: {error}"
   }
 }
