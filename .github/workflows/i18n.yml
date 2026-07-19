@@ -3,17 +3,43 @@ name: Localization
 on:
   pull_request:
     paths:
+      - 'main.py'
+      - 'configure.py'
+      - 'theme-editor.py'
+      - 'library/config.py'
+      - 'library/fonts.py'
       - 'library/i18n.py'
+      - 'library/resources.py'
       - 'locales/**'
+      - 'res/themes/3.5inchTheme2-zh-CN/**'
       - 'tests/test_i18n.py'
+      - 'tests/test_i18n_usage.py'
+      - 'tests/test_packaged_resources.py'
+      - 'tests/test_font_discovery.py'
+      - 'tests/test_chinese_theme.py'
+      - 'turing-system-monitor.spec'
+      - 'turing-system-monitor-debug.spec'
       - '.github/workflows/i18n.yml'
   push:
     branches:
       - main
     paths:
+      - 'main.py'
+      - 'configure.py'
+      - 'theme-editor.py'
+      - 'library/config.py'
+      - 'library/fonts.py'
       - 'library/i18n.py'
+      - 'library/resources.py'
       - 'locales/**'
+      - 'res/themes/3.5inchTheme2-zh-CN/**'
       - 'tests/test_i18n.py'
+      - 'tests/test_i18n_usage.py'
+      - 'tests/test_packaged_resources.py'
+      - 'tests/test_font_discovery.py'
+      - 'tests/test_chinese_theme.py'
+      - 'turing-system-monitor.spec'
+      - 'turing-system-monitor-debug.spec'
       - '.github/workflows/i18n.yml'
 
 permissions:
@@ -31,11 +57,30 @@ jobs:
         with:
           python-version: '3.11'
 
+      - name: Install localization test dependencies
+        run: python -m pip install --disable-pip-version-check PyYAML Pillow
+
       - name: Validate Python syntax
-        run: python -m py_compile library/i18n.py tests/test_i18n.py
+        run: |
+          python -m py_compile \
+            main.py \
+            configure.py \
+            theme-editor.py \
+            library/config.py \
+            library/fonts.py \
+            library/i18n.py \
+            library/resources.py \
+            tests/test_i18n.py \
+            tests/test_i18n_usage.py \
+            tests/test_packaged_resources.py \
+            tests/test_font_discovery.py \
+            tests/test_chinese_theme.py
 
       - name: Run localization unit tests
         run: python -m unittest tests.test_i18n -v
+
+      - name: Run complete test discovery
+        run: python -m unittest discover -s tests -v
 
       - name: Validate translation catalogs
         run: |
