@@ -1,0 +1,140 @@
+name: Release bundle validation
+
+on:
+  pull_request:
+    paths:
+      - 'library/fonts.py'
+      - 'library/i18n.py'
+      - 'library/resources.py'
+      - 'locales/**'
+      - 'res/fonts/**'
+      - 'res/themes/3.5inchTheme2-zh-CN/**'
+      - 'tools/validate_release_bundle.py'
+      - 'tools/windows-installer/**'
+      - 'tests/test_release_validation.py'
+      - 'turing-system-monitor.spec'
+      - 'turing-system-monitor-debug.spec'
+      - '.github/workflows/generate-linux-packages.yml'
+      - '.github/workflows/generate-windows-packages.yml'
+      - '.github/workflows/generate-windows-packages-debug.yml'
+      - '.github/workflows/release-bundle-validation.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-bundle-validation-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  static-validation:
+    name: Validate release rules
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --disable-pip-version-check --upgrade pip
+          python -m pip install --disable-pip-version-check -r requirements.txt
+
+      - name: Validate Python syntax
+        run: |
+          python -m py_compile \
+            tools/validate_release_bundle.py \
+            tests/test_release_validation.py
+
+      - name: Run release validation tests
+        run: python -m unittest tests.test_release_validation -v
+
+  windows-bundles:
+    name: Windows ${{ matrix.kind }} bundle
+    needs: static-validation
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - kind: release
+            spec: turing-system-monitor.spec
+            version_args: 0.0.0
+          - kind: debug
+            spec: turing-system-monitor-debug.spec
+            version_args: 0.0.0 debug
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --disable-pip-version-check --upgrade pip
+          python -m pip install --disable-pip-version-check -r requirements.txt
+
+      - name: Generate test version information
+        run: python.exe tools\windows-installer\generate-version-info.py ${{ matrix.version_args }}
+
+      - name: Build PyInstaller bundle
+        run: |
+          pyinstaller.exe --noconfirm --clean ${{ matrix.spec }}
+          "0.0.0-${{ matrix.kind }}" | Out-File ".\dist\turing-system-monitor\version.txt"
+
+      - name: Validate generated Windows bundle
+        run: |
+          python.exe tools\validate_release_bundle.py .\dist\turing-system-monitor --platform windows
+
+      - name: Compile localized Windows installer
+        if: matrix.kind == 'release'
+        uses: Minionguyjpro/Inno-Setup-Action@v1.2.8
+        with:
+          path: tools/windows-installer/turing-system-monitor.iss
+          options: /O+
+
+      - name: Check localized installer output
+        if: matrix.kind == 'release'
+        shell: pwsh
+        run: |
+          $installer = ".\tools\windows-installer\Output\turing-system-monitor-0.0.0-windows.exe"
+          if (-not (Test-Path $installer -PathType Leaf)) {
+            throw "Localized Windows installer was not generated: $installer"
+          }
+
+  linux-bundle:
+    name: Linux release bundle
+    needs: static-validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.14'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --disable-pip-version-check --upgrade pip
+          python -m pip install --disable-pip-version-check -r requirements.txt
+
+      - name: Build PyInstaller bundle
+        run: |
+          pyinstaller --noconfirm --clean turing-system-monitor.spec
+          echo "0.0.0-pr" > ./dist/turing-system-monitor/version.txt
+          ln -s configure ./dist/turing-system-monitor/turing-smart-screen
+
+      - name: Validate generated Linux bundle
+        run: |
+          python tools/validate_release_bundle.py ./dist/turing-system-monitor --platform linux
