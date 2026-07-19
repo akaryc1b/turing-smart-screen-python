@@ -1,0 +1,32 @@
+name: Temporary localization bootstrap
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/localization-bootstrap.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: localization-bootstrap-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  source-snapshot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Create temporary source snapshot
+        run: tar --exclude=.git -czf source-snapshot.tar.gz .
+
+      - name: Upload temporary source snapshot
+        uses: actions/upload-artifact@v7
+        with:
+          name: temporary-source-snapshot
+          path: source-snapshot.tar.gz
+          if-no-files-found: error
+          retention-days: 1
