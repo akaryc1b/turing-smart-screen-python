@@ -1,0 +1,419 @@
+---
+author: "@akaryc1b"
+
+display:
+  DISPLAY_SIZE: 3.5"
+  DISPLAY_ORIENTATION: portrait
+  DISPLAY_RGB_LED: 44, 132, 255
+
+static_images:
+  BACKGROUND:
+    PATH: background.png
+    X: 0
+    Y: 0
+    WIDTH: 320
+    HEIGHT: 480
+
+static_text:
+  TITLE:
+    TEXT: "系统状态"
+    X: 18
+    Y: 18
+    FONT: system:cjk-bold
+    FONT_SIZE: 21
+    FONT_COLOR: 241, 246, 255
+    BACKGROUND_IMAGE: background.png
+  DATE_LABEL:
+    TEXT: "日期"
+    X: 18
+    Y: 45
+    FONT: system:cjk
+    FONT_SIZE: 13
+    FONT_COLOR: 142, 165, 199
+    BACKGROUND_IMAGE: background.png
+  CPU_LABEL:
+    TEXT: "CPU"
+    X: 20
+    Y: 82
+    FONT: roboto-mono/RobotoMono-Bold.ttf
+    FONT_SIZE: 17
+    FONT_COLOR: 94, 204, 255
+    BACKGROUND_IMAGE: background.png
+  CPU_TEMP_LABEL:
+    TEXT: "温度"
+    X: 20
+    Y: 151
+    FONT: system:cjk
+    FONT_SIZE: 13
+    FONT_COLOR: 142, 165, 199
+    BACKGROUND_IMAGE: background.png
+  GPU_LABEL:
+    TEXT: "GPU"
+    X: 172
+    Y: 82
+    FONT: roboto-mono/RobotoMono-Bold.ttf
+    FONT_SIZE: 17
+    FONT_COLOR: 153, 125, 255
+    BACKGROUND_IMAGE: background.png
+  GPU_TEMP_LABEL:
+    TEXT: "温度"
+    X: 172
+    Y: 151
+    FONT: system:cjk
+    FONT_SIZE: 13
+    FONT_COLOR: 142, 165, 199
+    BACKGROUND_IMAGE: background.png
+  GPU_FPS_LABEL:
+    TEXT: "FPS"
+    X: 251
+    Y: 151
+    FONT: roboto-mono/RobotoMono-Bold.ttf
+    FONT_SIZE: 12
+    FONT_COLOR: 142, 165, 199
+    BACKGROUND_IMAGE: background.png
+  MEMORY_LABEL:
+    TEXT: "内存"
+    X: 20
+    Y: 196
+    FONT: system:cjk-bold
+    FONT_SIZE: 17
+    FONT_COLOR: 79, 224, 181
+    BACKGROUND_IMAGE: background.png
+  MEMORY_USED_LABEL:
+    TEXT: "已用"
+    X: 20
+    Y: 263
+    FONT: system:cjk
+    FONT_SIZE: 13
+    FONT_COLOR: 142, 165, 199
+    BACKGROUND_IMAGE: background.png
+  DISK_LABEL:
+    TEXT: "磁盘"
+    X: 172
+    Y: 196
+    FONT: system:cjk-bold
+    FONT_SIZE: 17
+    FONT_COLOR: 255, 180, 91
+    BACKGROUND_IMAGE: background.png
+  DISK_USED_LABEL:
+    TEXT: "已用"
+    X: 172
+    Y: 263
+    FONT: system:cjk
+    FONT_SIZE: 13
+    FONT_COLOR: 142, 165, 199
+    BACKGROUND_IMAGE: background.png
+  NETWORK_LABEL:
+    TEXT: "网络"
+    X: 20
+    Y: 307
+    FONT: system:cjk-bold
+    FONT_SIZE: 17
+    FONT_COLOR: 82, 196, 255
+    BACKGROUND_IMAGE: background.png
+  WLO_LABEL:
+    TEXT: "无线"
+    X: 20
+    Y: 333
+    FONT: system:cjk
+    FONT_SIZE: 13
+    FONT_COLOR: 191, 211, 239
+    BACKGROUND_IMAGE: background.png
+  ETH_LABEL:
+    TEXT: "有线"
+    X: 172
+    Y: 333
+    FONT: system:cjk
+    FONT_SIZE: 13
+    FONT_COLOR: 191, 211, 239
+    BACKGROUND_IMAGE: background.png
+  WLO_UPLOAD_LABEL:
+    TEXT: "上传"
+    X: 20
+    Y: 354
+    FONT: system:cjk
+    FONT_SIZE: 12
+    FONT_COLOR: 142, 165, 199
+    BACKGROUND_IMAGE: background.png
+  WLO_DOWNLOAD_LABEL:
+    TEXT: "下载"
+    X: 20
+    Y: 376
+    FONT: system:cjk
+    FONT_SIZE: 12
+    FONT_COLOR: 142, 165, 199
+    BACKGROUND_IMAGE: background.png
+  ETH_UPLOAD_LABEL:
+    TEXT: "上传"
+    X: 172
+    Y: 354
+    FONT: system:cjk
+    FONT_SIZE: 12
+    FONT_COLOR: 142, 165, 199
+    BACKGROUND_IMAGE: background.png
+  ETH_DOWNLOAD_LABEL:
+    TEXT: "下载"
+    X: 172
+    Y: 376
+    FONT: system:cjk
+    FONT_SIZE: 12
+    FONT_COLOR: 142, 165, 199
+    BACKGROUND_IMAGE: background.png
+  UPTIME_LABEL:
+    TEXT: "运行时间"
+    X: 20
+    Y: 417
+    FONT: system:cjk-bold
+    FONT_SIZE: 16
+    FONT_COLOR: 241, 246, 255
+    BACKGROUND_IMAGE: background.png
+
+STATS:
+  CPU:
+    PERCENTAGE:
+      INTERVAL: 1
+      TEXT:
+        SHOW: True
+        SHOW_UNIT: True
+        X: 20
+        Y: 108
+        WIDTH: 120
+        HEIGHT: 30
+        FONT: roboto-mono/RobotoMono-Bold.ttf
+        FONT_SIZE: 25
+        FONT_COLOR: 241, 246, 255
+        BACKGROUND_IMAGE: background.png
+      GRAPH:
+        SHOW: True
+        X: 20
+        Y: 140
+        WIDTH: 120
+        HEIGHT: 6
+        MIN_VALUE: 0
+        MAX_VALUE: 100
+        BAR_COLOR: 94, 204, 255
+        BAR_OUTLINE: False
+        BACKGROUND_IMAGE: background.png
+    TEMPERATURE:
+      INTERVAL: 5
+      TEXT:
+        SHOW: True
+        SHOW_UNIT: True
+        X: 67
+        Y: 149
+        WIDTH: 67
+        HEIGHT: 19
+        FONT: roboto-mono/RobotoMono-Bold.ttf
+        FONT_SIZE: 14
+        FONT_COLOR: 241, 246, 255
+        BACKGROUND_IMAGE: background.png
+  GPU:
+    INTERVAL: 1
+    PERCENTAGE:
+      TEXT:
+        SHOW: True
+        SHOW_UNIT: True
+        X: 172
+        Y: 108
+        WIDTH: 120
+        HEIGHT: 30
+        FONT: roboto-mono/RobotoMono-Bold.ttf
+        FONT_SIZE: 25
+        FONT_COLOR: 241, 246, 255
+        BACKGROUND_IMAGE: background.png
+      GRAPH:
+        SHOW: True
+        X: 172
+        Y: 140
+        WIDTH: 120
+        HEIGHT: 6
+        MIN_VALUE: 0
+        MAX_VALUE: 100
+        BAR_COLOR: 153, 125, 255
+        BAR_OUTLINE: False
+        BACKGROUND_IMAGE: background.png
+    TEMPERATURE:
+      TEXT:
+        SHOW: True
+        SHOW_UNIT: True
+        X: 219
+        Y: 149
+        WIDTH: 48
+        HEIGHT: 19
+        FONT: roboto-mono/RobotoMono-Bold.ttf
+        FONT_SIZE: 14
+        FONT_COLOR: 241, 246, 255
+        BACKGROUND_IMAGE: background.png
+    FPS:
+      TEXT:
+        SHOW: True
+        SHOW_UNIT: False
+        X: 278
+        Y: 150
+        WIDTH: 27
+        HEIGHT: 18
+        FONT: roboto-mono/RobotoMono-Bold.ttf
+        FONT_SIZE: 12
+        FONT_COLOR: 241, 246, 255
+        BACKGROUND_IMAGE: background.png
+  MEMORY:
+    INTERVAL: 5
+    VIRTUAL:
+      GRAPH:
+        SHOW: True
+        X: 20
+        Y: 249
+        WIDTH: 120
+        HEIGHT: 6
+        MIN_VALUE: 0
+        MAX_VALUE: 100
+        BAR_COLOR: 79, 224, 181
+        BAR_OUTLINE: False
+        BACKGROUND_IMAGE: background.png
+      PERCENT_TEXT:
+        SHOW: True
+        SHOW_UNIT: True
+        X: 20
+        Y: 222
+        WIDTH: 120
+        HEIGHT: 26
+        FONT: roboto-mono/RobotoMono-Bold.ttf
+        FONT_SIZE: 23
+        FONT_COLOR: 241, 246, 255
+        BACKGROUND_IMAGE: background.png
+      USED:
+        SHOW: True
+        SHOW_UNIT: True
+        X: 67
+        Y: 261
+        WIDTH: 70
+        HEIGHT: 19
+        FONT: roboto-mono/RobotoMono-Bold.ttf
+        FONT_SIZE: 13
+        FONT_COLOR: 241, 246, 255
+        BACKGROUND_IMAGE: background.png
+  DISK:
+    INTERVAL: 10
+    USED:
+      GRAPH:
+        SHOW: True
+        X: 172
+        Y: 249
+        WIDTH: 120
+        HEIGHT: 6
+        MIN_VALUE: 0
+        MAX_VALUE: 100
+        BAR_COLOR: 255, 180, 91
+        BAR_OUTLINE: False
+        BACKGROUND_IMAGE: background.png
+      PERCENT_TEXT:
+        SHOW: True
+        SHOW_UNIT: True
+        X: 172
+        Y: 222
+        WIDTH: 120
+        HEIGHT: 26
+        FONT: roboto-mono/RobotoMono-Bold.ttf
+        FONT_SIZE: 23
+        FONT_COLOR: 241, 246, 255
+        BACKGROUND_IMAGE: background.png
+      TEXT:
+        SHOW: True
+        SHOW_UNIT: True
+        X: 219
+        Y: 261
+        WIDTH: 70
+        HEIGHT: 19
+        FONT: roboto-mono/RobotoMono-Bold.ttf
+        FONT_SIZE: 13
+        FONT_COLOR: 241, 246, 255
+        BACKGROUND_IMAGE: background.png
+  NET:
+    INTERVAL: 1
+    WLO:
+      UPLOAD:
+        TEXT:
+          SHOW: True
+          X: 56
+          Y: 353
+          WIDTH: 92
+          HEIGHT: 17
+          FONT: roboto-mono/RobotoMono-Regular.ttf
+          FONT_SIZE: 11
+          FONT_COLOR: 241, 246, 255
+          BACKGROUND_IMAGE: background.png
+      DOWNLOAD:
+        TEXT:
+          SHOW: True
+          X: 56
+          Y: 375
+          WIDTH: 92
+          HEIGHT: 17
+          FONT: roboto-mono/RobotoMono-Regular.ttf
+          FONT_SIZE: 11
+          FONT_COLOR: 241, 246, 255
+          BACKGROUND_IMAGE: background.png
+    ETH:
+      UPLOAD:
+        TEXT:
+          SHOW: True
+          X: 208
+          Y: 353
+          WIDTH: 92
+          HEIGHT: 17
+          FONT: roboto-mono/RobotoMono-Regular.ttf
+          FONT_SIZE: 11
+          FONT_COLOR: 241, 246, 255
+          BACKGROUND_IMAGE: background.png
+      DOWNLOAD:
+        TEXT:
+          SHOW: True
+          X: 208
+          Y: 375
+          WIDTH: 92
+          HEIGHT: 17
+          FONT: roboto-mono/RobotoMono-Regular.ttf
+          FONT_SIZE: 11
+          FONT_COLOR: 241, 246, 255
+          BACKGROUND_IMAGE: background.png
+  DATE:
+    INTERVAL: 1
+    DAY:
+      TEXT:
+        SHOW: True
+        X: 57
+        Y: 43
+        WIDTH: 145
+        HEIGHT: 19
+        FONT: roboto-mono/RobotoMono-Regular.ttf
+        FONT_SIZE: 12
+        FONT_COLOR: 191, 211, 239
+        BACKGROUND_IMAGE: background.png
+        FORMAT: yyyy-MM-dd
+    HOUR:
+      TEXT:
+        SHOW: True
+        X: 221
+        Y: 43
+        WIDTH: 83
+        HEIGHT: 19
+        FONT: roboto-mono/RobotoMono-Regular.ttf
+        FONT_SIZE: 12
+        FONT_COLOR: 191, 211, 239
+        BACKGROUND_IMAGE: background.png
+        ALIGN: right
+        ANCHOR: rt
+        FORMAT: HH:mm:ss
+  UPTIME:
+    INTERVAL: 1
+    FORMATTED:
+      TEXT:
+        SHOW: True
+        X: 20
+        Y: 444
+        WIDTH: 280
+        HEIGHT: 22
+        FONT: roboto-mono/RobotoMono-Regular.ttf
+        FONT_SIZE: 14
+        FONT_COLOR: 191, 211, 239
+        BACKGROUND_IMAGE: background.png
