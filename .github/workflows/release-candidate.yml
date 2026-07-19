@@ -75,17 +75,17 @@ jobs:
 
       - name: Validate requested version
         shell: pwsh
-        run: python.exe tools\build_release_manifest.py validate-version $env:RC_VERSION
+        run: python.exe tools\build_release_manifest.py validate-version ${env:RC_VERSION}
 
       - name: Generate release version information
         shell: pwsh
-        run: python.exe tools\windows-installer\generate-version-info.py $env:RC_VERSION
+        run: python.exe tools\windows-installer\generate-version-info.py ${env:RC_VERSION}
 
       - name: Build Windows release bundle
         shell: pwsh
         run: |
           pyinstaller.exe --noconfirm --clean turing-system-monitor.spec
-          $env:RC_VERSION | Out-File ".\dist\turing-system-monitor\version.txt"
+          ${env:RC_VERSION} | Out-File ".\dist\turing-system-monitor\version.txt"
 
       - name: Validate Windows release bundle
         shell: pwsh
@@ -125,7 +125,7 @@ jobs:
       - name: Create Windows portable ZIP
         shell: pwsh
         run: |
-          $archive = "turing-system-monitor-$env:RC_VERSION-portable-windows.zip"
+          $archive = "turing-system-monitor-${env:RC_VERSION}-portable-windows.zip"
           Push-Location .\dist
           7z a -tzip "..\$archive" ".\turing-system-monitor"
           $exitCode = $LASTEXITCODE
@@ -139,12 +139,12 @@ jobs:
         run: |
           New-Item -ItemType Directory -Force ".\rc-metadata" | Out-Null
           $pythonVersion = (python.exe --version).Split()[1]
-          $installer = ".\tools\windows-installer\Output\turing-system-monitor-$env:RC_VERSION-windows.exe"
-          $archive = ".\turing-system-monitor-$env:RC_VERSION-portable-windows.zip"
+          $installer = ".\tools\windows-installer\Output\turing-system-monitor-${env:RC_VERSION}-windows.exe"
+          $archive = ".\turing-system-monitor-${env:RC_VERSION}-portable-windows.zip"
           python.exe tools\build_release_manifest.py entry `
             --artifact $installer `
             --kind windows-release-installer `
-            --version $env:RC_VERSION `
+            --version ${env:RC_VERSION} `
             --commit $env:GITHUB_SHA `
             --python-version $pythonVersion `
             --catalog-dir ".\dist\turing-system-monitor\locales" `
@@ -153,7 +153,7 @@ jobs:
           python.exe tools\build_release_manifest.py entry `
             --artifact $archive `
             --kind windows-release-portable `
-            --version $env:RC_VERSION `
+            --version ${env:RC_VERSION} `
             --commit $env:GITHUB_SHA `
             --python-version $pythonVersion `
             --catalog-dir ".\dist\turing-system-monitor\locales" `
@@ -192,19 +192,19 @@ jobs:
 
       - name: Validate requested version
         shell: pwsh
-        run: python.exe tools\build_release_manifest.py validate-version $env:RC_VERSION
+        run: python.exe tools\build_release_manifest.py validate-version ${env:RC_VERSION}
 
       - name: Generate debug version information
         shell: pwsh
         run: |
           python.exe tools\windows-installer\generate-version-info.py `
-            $env:RC_VERSION debug
+            ${env:RC_VERSION} debug
 
       - name: Build Windows debug bundle
         shell: pwsh
         run: |
           pyinstaller.exe --noconfirm --clean turing-system-monitor-debug.spec
-          "$env:RC_VERSION-debug" | Out-File ".\dist\turing-system-monitor\version.txt"
+          "${env:RC_VERSION}-debug" | Out-File ".\dist\turing-system-monitor\version.txt"
 
       - name: Validate Windows debug bundle
         shell: pwsh
@@ -244,7 +244,7 @@ jobs:
       - name: Create Windows debug portable ZIP
         shell: pwsh
         run: |
-          $archive = "turing-system-monitor-$env:RC_VERSION-debug-portable-windows.zip"
+          $archive = "turing-system-monitor-${env:RC_VERSION}-debug-portable-windows.zip"
           Push-Location .\dist
           7z a -tzip "..\$archive" ".\turing-system-monitor"
           $exitCode = $LASTEXITCODE
@@ -258,12 +258,12 @@ jobs:
         run: |
           New-Item -ItemType Directory -Force ".\rc-metadata" | Out-Null
           $pythonVersion = (python.exe --version).Split()[1]
-          $installer = ".\tools\windows-installer\Output\turing-system-monitor-$env:RC_VERSION-debug-windows.exe"
-          $archive = ".\turing-system-monitor-$env:RC_VERSION-debug-portable-windows.zip"
+          $installer = ".\tools\windows-installer\Output\turing-system-monitor-${env:RC_VERSION}-debug-windows.exe"
+          $archive = ".\turing-system-monitor-${env:RC_VERSION}-debug-portable-windows.zip"
           python.exe tools\build_release_manifest.py entry `
             --artifact $installer `
             --kind windows-debug-installer `
-            --version $env:RC_VERSION `
+            --version ${env:RC_VERSION} `
             --commit $env:GITHUB_SHA `
             --python-version $pythonVersion `
             --catalog-dir ".\dist\turing-system-monitor\locales" `
@@ -272,7 +272,7 @@ jobs:
           python.exe tools\build_release_manifest.py entry `
             --artifact $archive `
             --kind windows-debug-portable `
-            --version $env:RC_VERSION `
+            --version ${env:RC_VERSION} `
             --commit $env:GITHUB_SHA `
             --python-version $pythonVersion `
             --catalog-dir ".\dist\turing-system-monitor\locales" `
