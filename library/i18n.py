@@ -16,6 +16,8 @@ import os
 from pathlib import Path
 from typing import Any, Dict, Mapping, Optional
 
+from library.resources import resource_path
+
 LOGGER = logging.getLogger(__name__)
 
 DEFAULT_LOCALE = "en_US"
@@ -36,7 +38,7 @@ _LOCALE_ALIASES = {
 
 
 def _default_locales_dir() -> Path:
-    return Path(__file__).resolve().parent.parent / "locales"
+    return resource_path("locales")
 
 
 def normalize_locale(value: Optional[str]) -> Optional[str]:
