@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   cancel-stale-runs:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     timeout-minutes: 10
     steps:
       - name: Cancel other active pull request runs
@@ -25,7 +25,7 @@ jobs:
           HEAD_BRANCH: ${{ github.head_ref }}
           CURRENT_RUN_ID: ${{ github.run_id }}
         run: |
-          python - <<'PY'
+          python3 - <<'PY'
           import json
           import os
           import urllib.parse
