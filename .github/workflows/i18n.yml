@@ -178,7 +178,20 @@ jobs:
           tests.test_chinese_theme.ChineseThemeTests.test_theme_does_not_vendor_font_binaries -v
 
       - name: Run complete test discovery
-        run: python -m unittest discover -s tests -t . -v
+        id: full-discovery
+        shell: bash
+        run: |
+          set +e
+          python -m unittest discover -s tests -t . -v 2>&1 | tee unittest-discovery.log
+          status=${PIPESTATUS[0]}
+          exit "$status"
+
+      - name: Archive failed test discovery log
+        if: failure() && steps.full-discovery.outcome == 'failure'
+        uses: actions/upload-artifact@v7
+        with:
+          name: localization-unittest-discovery
+          path: unittest-discovery.log
 
       - name: Validate translation catalogs
         run: |
