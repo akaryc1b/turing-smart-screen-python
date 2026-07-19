@@ -33,6 +33,9 @@ MANIFEST
 *.manifest
 tools/windows-installer/Output/
 
+# Downloaded installer translations
+tools/windows-installer/languages/
+
 # Installer logs
 pip-log.txt
 pip-delete-this-directory.txt
@@ -54,6 +57,10 @@ coverage.xml
 # Translations
 *.mo
 *.pot
+
+# Localization maintenance reports
+/upstream-sync-report.md
+/upstream-sync-report.json
 
 # Django stuff:
 *.log
