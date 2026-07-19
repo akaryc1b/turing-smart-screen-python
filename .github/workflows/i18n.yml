@@ -12,11 +12,16 @@ on:
       - 'library/resources.py'
       - 'locales/**'
       - 'res/themes/3.5inchTheme2-zh-CN/**'
+      - 'README.zh-CN.md'
+      - 'docs/zh-CN/**'
+      - 'tools/upstream_sync_report.py'
       - 'tests/test_i18n.py'
       - 'tests/test_i18n_usage.py'
       - 'tests/test_packaged_resources.py'
       - 'tests/test_font_discovery.py'
       - 'tests/test_chinese_theme.py'
+      - 'tests/test_upstream_sync_report.py'
+      - 'tests/test_localization_maintenance.py'
       - 'turing-system-monitor.spec'
       - 'turing-system-monitor-debug.spec'
       - '.github/workflows/i18n.yml'
@@ -33,17 +38,26 @@ on:
       - 'library/resources.py'
       - 'locales/**'
       - 'res/themes/3.5inchTheme2-zh-CN/**'
+      - 'README.zh-CN.md'
+      - 'docs/zh-CN/**'
+      - 'tools/upstream_sync_report.py'
       - 'tests/test_i18n.py'
       - 'tests/test_i18n_usage.py'
       - 'tests/test_packaged_resources.py'
       - 'tests/test_font_discovery.py'
       - 'tests/test_chinese_theme.py'
+      - 'tests/test_upstream_sync_report.py'
+      - 'tests/test_localization_maintenance.py'
       - 'turing-system-monitor.spec'
       - 'turing-system-monitor-debug.spec'
       - '.github/workflows/i18n.yml'
 
 permissions:
   contents: read
+
+concurrency:
+  group: localization-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   test:
@@ -72,11 +86,14 @@ jobs:
             library/fonts.py \
             library/i18n.py \
             library/resources.py \
+            tools/upstream_sync_report.py \
             tests/test_i18n.py \
             tests/test_i18n_usage.py \
             tests/test_packaged_resources.py \
             tests/test_font_discovery.py \
-            tests/test_chinese_theme.py
+            tests/test_chinese_theme.py \
+            tests/test_upstream_sync_report.py \
+            tests/test_localization_maintenance.py
 
       - name: Run localization unit tests
         run: python -m unittest tests.test_i18n -v
@@ -176,6 +193,12 @@ jobs:
         run: >-
           python -m unittest
           tests.test_chinese_theme.ChineseThemeTests.test_theme_does_not_vendor_font_binaries -v
+
+      - name: Run localization maintenance tests
+        run: >-
+          python -m unittest
+          tests.test_upstream_sync_report
+          tests.test_localization_maintenance -v
 
       - name: Run complete test discovery
         run: python -m unittest discover -s tests -t . -v
