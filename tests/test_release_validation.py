@@ -145,8 +145,9 @@ class ReleaseWorkflowIntegrationTests(unittest.TestCase):
         self.assertIn("prepare-inno-languages.ps1", source)
         self.assertIn("choco install innosetup", source)
         self.assertIn("ISCC.exe", source)
-        self.assertIn("inno-setup.log", source)
         self.assertIn("cancel-in-progress: true", source)
+        self.assertNotIn("inno-setup.log", source)
+        self.assertNotIn("Archive failed installer compiler log", source)
         self.assertLess(
             source.index("prepare-inno-languages.ps1"),
             source.index("choco install innosetup"),
