@@ -61,6 +61,8 @@ coverage.xml
 # Localization maintenance reports
 /upstream-sync-report.md
 /upstream-sync-report.json
+/localization-coverage.json
+/localization-coverage.md
 
 # Django stuff:
 *.log
