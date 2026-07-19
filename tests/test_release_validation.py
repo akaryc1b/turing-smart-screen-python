@@ -102,18 +102,21 @@ class ReleaseWorkflowIntegrationTests(unittest.TestCase):
             ".github/workflows/generate-windows-packages.yml": (
                 "--platform windows",
                 "Create portable zip archive",
+                True,
             ),
             ".github/workflows/generate-windows-packages-debug.yml": (
                 "--platform windows",
                 "Create portable zip archive",
+                True,
             ),
             ".github/workflows/generate-linux-packages.yml": (
                 "--platform linux",
                 "Create archive from generated binaries",
+                False,
             ),
         }
 
-        for filename, (platform_argument, archive_marker) in workflows.items():
+        for filename, (platform_argument, archive_marker, has_installer) in workflows.items():
             with self.subTest(filename=filename):
                 source = (REPOSITORY_ROOT / filename).read_text(encoding="utf-8")
                 validator = "tools/validate_release_bundle.py"
@@ -121,6 +124,14 @@ class ReleaseWorkflowIntegrationTests(unittest.TestCase):
                 self.assertIn(platform_argument, source)
                 self.assertLess(source.index("pyinstaller"), source.index(validator))
                 self.assertLess(source.index(validator), source.index(archive_marker))
+
+                if has_installer:
+                    prepare = "prepare-inno-languages.ps1"
+                    compiler = "Inno-Setup-Action"
+                    self.assertIn(prepare, source)
+                    self.assertIn(compiler, source)
+                    self.assertLess(source.index(validator), source.index(prepare))
+                    self.assertLess(source.index(prepare), source.index(compiler))
 
     def test_pull_request_validation_builds_release_debug_and_linux_bundles(self):
         path = REPOSITORY_ROOT / ".github/workflows/release-bundle-validation.yml"
@@ -131,17 +142,37 @@ class ReleaseWorkflowIntegrationTests(unittest.TestCase):
         self.assertIn("windows-latest", source)
         self.assertIn("ubuntu-latest", source)
         self.assertIn("validate_release_bundle.py", source)
+        self.assertIn("prepare-inno-languages.ps1", source)
         self.assertIn("choco install innosetup", source)
         self.assertIn("ISCC.exe", source)
         self.assertIn("inno-setup.log", source)
         self.assertIn("cancel-in-progress: true", source)
+        self.assertLess(
+            source.index("prepare-inno-languages.ps1"),
+            source.index("choco install innosetup"),
+        )
+        self.assertLess(source.index("choco install innosetup"), source.index("ISCC.exe"))
 
-    def test_windows_installer_offers_simplified_chinese(self):
+    def test_installer_translation_download_is_pinned_and_verified(self):
+        path = REPOSITORY_ROOT / "tools/windows-installer/prepare-inno-languages.ps1"
+        source = path.read_text(encoding="utf-8")
+
+        self.assertIn("6da09d23e14443d4cf8f07b1c5fd821bfe459788", source)
+        self.assertIn("9e26f9c66ffe689d073706f5fc33a0b50064926d", source)
+        self.assertIn("raw.githubusercontent.com", source)
+        self.assertIn("git hash-object", source)
+        self.assertIn("LanguageName=简体中文", source)
+        self.assertIn("TranslatorNote=简体中文翻译由 Kira", source)
+
+    def test_windows_installer_offers_simplified_chinese_with_english_fallback(self):
         path = REPOSITORY_ROOT / "tools/windows-installer/turing-system-monitor.iss"
         source = path.read_text(encoding="utf-8")
 
         self.assertIn('Name: "chinesesimplified"', source)
-        self.assertIn("ChineseSimplified.isl", source)
+        self.assertIn(
+            'MessagesFile: "compiler:Default.isl,languages\\ChineseSimplified.isl"',
+            source,
+        )
         self.assertIn("chinesesimplified.PawnIOPageTitle", source)
         self.assertIn("{cm:PawnIOPageTitle}", source)
         self.assertNotIn("PagePawnIO := CreateCustomPage(\n    wpInstalling,\n    'Install", source)
