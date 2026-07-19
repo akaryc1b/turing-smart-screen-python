@@ -173,6 +173,8 @@ class MaintenanceGuideContentTests(unittest.TestCase):
         ignored_paths = (
             "/upstream-sync-report.md",
             "/upstream-sync-report.json",
+            "/localization-coverage.json",
+            "/localization-coverage.md",
             "tools/windows-installer/languages/",
         )
 
@@ -184,6 +186,8 @@ class MaintenanceGuideContentTests(unittest.TestCase):
             "upstream-sync-report.md",
             "upstream-sync-report.json",
             "upstream-sync-metadata.json",
+            "localization-coverage.json",
+            "localization-coverage.md",
             "tools/windows-installer/languages/ChineseSimplified.isl",
             ".github/workflows/upstream-compat-audit-temporary.yml",
         ):
@@ -200,6 +204,10 @@ class LocalizationWorkflowMaintenanceTests(unittest.TestCase):
         for marker in (
             "README.zh-CN.md",
             "docs/zh-CN/**",
+            "tools/localization_coverage.py",
+            "tools/localization-allowlist.json",
+            "tests/test_localization_coverage.py",
+            ".github/workflows/localization-coverage.yml",
             "tools/upstream_sync_report.py",
             "tests/test_upstream_sync_report.py",
             "tests/test_localization_maintenance.py",
