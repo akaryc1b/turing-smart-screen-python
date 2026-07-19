@@ -34,20 +34,31 @@ class ChineseThemeTests(unittest.TestCase):
         cls.width = 320
         cls.height = 480
 
+    def assert_valid_theme_png(self, filename):
+        path = THEME_DIR / filename
+        self.assertTrue(path.is_file(), f"Missing theme image: {filename}")
+        self.assertGreater(
+            path.stat().st_size,
+            1000,
+            f"Theme image is unexpectedly small: {filename}",
+        )
+        with Image.open(path) as image:
+            self.assertEqual("PNG", image.format, filename)
+            self.assertEqual((self.width, self.height), image.size, filename)
+            image.verify()
+        with Image.open(path) as image:
+            image.load()
+
     def test_theme_is_independent_and_targets_35_inch_portrait(self):
         self.assertEqual('3.5"', self.theme["display"]["DISPLAY_SIZE"])
         self.assertEqual("portrait", self.theme["display"]["DISPLAY_ORIENTATION"])
         self.assertTrue((THEME_DIR.parent / "3.5inchTheme2" / "theme.yaml").is_file())
 
-    def test_background_and_preview_are_valid_320_by_480_png_files(self):
-        for filename in ("background.png", "preview.png"):
-            with self.subTest(filename=filename):
-                path = THEME_DIR / filename
-                self.assertGreater(path.stat().st_size, 1000)
-                with Image.open(path) as image:
-                    self.assertEqual("PNG", image.format)
-                    self.assertEqual((self.width, self.height), image.size)
-                    image.verify()
+    def test_background_is_valid_320_by_480_png(self):
+        self.assert_valid_theme_png("background.png")
+
+    def test_preview_is_valid_320_by_480_png(self):
+        self.assert_valid_theme_png("preview.png")
 
     def test_static_image_files_exist(self):
         for name, image_data in self.theme.get("static_images", {}).items():
