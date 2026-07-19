@@ -135,10 +135,15 @@ jobs:
           python -m unittest
           tests.test_chinese_theme.ChineseThemeTests.test_theme_is_independent_and_targets_35_inch_portrait -v
 
-      - name: Check Chinese theme PNG assets
+      - name: Check Chinese theme background PNG
         run: >-
           python -m unittest
-          tests.test_chinese_theme.ChineseThemeTests.test_background_and_preview_are_valid_320_by_480_png_files -v
+          tests.test_chinese_theme.ChineseThemeTests.test_background_is_valid_320_by_480_png -v
+
+      - name: Check Chinese theme preview PNG
+        run: >-
+          python -m unittest
+          tests.test_chinese_theme.ChineseThemeTests.test_preview_is_valid_320_by_480_png -v
 
       - name: Check Chinese theme image references
         run: >-
