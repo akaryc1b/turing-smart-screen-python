@@ -112,6 +112,7 @@
     "import_help": "请按照项目启动指南安装所需依赖：https://github.com/mathoudebine/turing-smart-screen-python/wiki/System-monitor-:-how-to-start\n也可查看故障排除页面：https://github.com/mathoudebine/turing-smart-screen-python/wiki/Troubleshooting#all-os-tkinter-dependency-not-installed",
     "tkinter_missing": "[错误] 未安装 Tkinter 依赖。",
     "tkinter_help": "请按照项目故障排除说明安装 Tkinter：https://github.com/mathoudebine/turing-smart-screen-python/wiki/Troubleshooting#all-os-tkinter-dependency-not-installed",
-    "theme_invalid": "主题配置错误：{error}"
+    "theme_invalid": "主题配置错误：{error}",
+    "cjk_font_missing": "未找到可用的简体中文字体。请安装微软雅黑、苹方、Noto Sans CJK SC 或其他受支持的中文字体，然后重新启动程序。"
   }
 }
