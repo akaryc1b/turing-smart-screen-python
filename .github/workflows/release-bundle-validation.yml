@@ -95,6 +95,11 @@ jobs:
         run: |
           python.exe tools\validate_release_bundle.py .\dist\turing-system-monitor --platform windows
 
+      - name: Prepare pinned Simplified Chinese installer translation
+        if: matrix.kind == 'release'
+        shell: pwsh
+        run: .\tools\windows-installer\prepare-inno-languages.ps1
+
       - name: Install Inno Setup
         if: matrix.kind == 'release'
         shell: pwsh
