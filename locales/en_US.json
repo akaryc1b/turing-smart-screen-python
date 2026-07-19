@@ -5,17 +5,14 @@
     "theme_editor_title": "Turing SysMon Theme Editor"
   },
   "common": {
-    "automatic": "Automatic",
     "automatic_detection": "Automatic detection",
     "none": "None",
     "unknown": "unknown",
-    "save": "Save",
     "save_settings": "Save settings",
     "save_and_run": "Save and run",
     "search": "Search",
     "exit": "Exit",
-    "configure": "Configure",
-    "language": "Language"
+    "configure": "Configure"
   },
   "language": {
     "auto": "Follow system language",
@@ -112,7 +109,6 @@
     "import_help": "Please follow the start guide to install required packages: https://github.com/mathoudebine/turing-smart-screen-python/wiki/System-monitor-:-how-to-start\nOr see the troubleshooting page: https://github.com/mathoudebine/turing-smart-screen-python/wiki/Troubleshooting#all-os-tkinter-dependency-not-installed",
     "tkinter_missing": "[ERROR] Tkinter dependency is not installed.",
     "tkinter_help": "Please install Tkinter using the project's troubleshooting instructions: https://github.com/mathoudebine/turing-smart-screen-python/wiki/Troubleshooting#all-os-tkinter-dependency-not-installed",
-    "theme_invalid": "Error in theme: {error}",
     "cjk_font_missing": "No compatible Simplified Chinese font was found. Install Microsoft YaHei, PingFang SC, Noto Sans CJK SC, or another supported CJK font, then restart the application."
   }
 }
