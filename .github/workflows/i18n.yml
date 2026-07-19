@@ -94,10 +94,20 @@ jobs:
           python -m unittest
           tests.test_i18n_usage.CatalogQualityTests.test_catalog_files_are_valid_utf8_json -v
 
-      - name: Check translation key usage
+      - name: Check tr() keys are string literals
         run: >-
           python -m unittest
-          tests.test_i18n_usage.CatalogQualityTests.test_all_literal_translation_keys_exist_and_are_used -v
+          tests.test_i18n_usage.CatalogQualityTests.test_translation_keys_are_string_literals -v
+
+      - name: Check all tr() keys exist
+        run: >-
+          python -m unittest
+          tests.test_i18n_usage.CatalogQualityTests.test_all_literal_translation_keys_exist -v
+
+      - name: Check catalog entries are used
+        run: >-
+          python -m unittest
+          tests.test_i18n_usage.CatalogQualityTests.test_catalog_entries_are_used -v
 
       - name: Check core Python for hardcoded Chinese
         run: >-
