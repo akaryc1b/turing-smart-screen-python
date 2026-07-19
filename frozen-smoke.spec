@@ -12,7 +12,7 @@ SMOKE_DATAS = [
 
 smoke_a = Analysis(
     ['tools/frozen_smoke.py'],
-    pathex=[],
+    pathex=['.'],
     binaries=[],
     datas=SMOKE_DATAS,
     hiddenimports=['PIL', 'PIL._imagingtk', 'PIL._tkinter_finder'],
