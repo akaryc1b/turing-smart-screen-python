@@ -22,9 +22,11 @@ on:
       - 'tests/test_chinese_theme.py'
       - 'tests/test_upstream_sync_report.py'
       - 'tests/test_localization_maintenance.py'
+      - 'tests/test_dependency_review_policy.py'
       - 'turing-system-monitor.spec'
       - 'turing-system-monitor-debug.spec'
       - '.github/workflows/i18n.yml'
+      - '.github/workflows/dependency-review.yml'
   push:
     branches:
       - main
@@ -48,9 +50,11 @@ on:
       - 'tests/test_chinese_theme.py'
       - 'tests/test_upstream_sync_report.py'
       - 'tests/test_localization_maintenance.py'
+      - 'tests/test_dependency_review_policy.py'
       - 'turing-system-monitor.spec'
       - 'turing-system-monitor-debug.spec'
       - '.github/workflows/i18n.yml'
+      - '.github/workflows/dependency-review.yml'
 
 permissions:
   contents: read
@@ -93,7 +97,8 @@ jobs:
             tests/test_font_discovery.py \
             tests/test_chinese_theme.py \
             tests/test_upstream_sync_report.py \
-            tests/test_localization_maintenance.py
+            tests/test_localization_maintenance.py \
+            tests/test_dependency_review_policy.py
 
       - name: Run localization unit tests
         run: python -m unittest tests.test_i18n -v
@@ -198,7 +203,8 @@ jobs:
         run: >-
           python -m unittest
           tests.test_upstream_sync_report
-          tests.test_localization_maintenance -v
+          tests.test_localization_maintenance
+          tests.test_dependency_review_policy -v
 
       - name: Run complete test discovery
         run: python -m unittest discover -s tests -t . -v

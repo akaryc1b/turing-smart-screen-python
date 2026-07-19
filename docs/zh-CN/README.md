@@ -14,6 +14,7 @@
 
 - [本地化架构说明](LOCALIZATION.md)：语言选择、词库契约、冻结资源和已完成范围。
 - [简体中文贡献指南](contributing.md)：词库、代码、主题、打包和 PR 规则。
+- [Dependency Review 根因与维护边界](dependency-review.md)：Fork 平台限制、运行证据和不可弱化的安全 CI 合同。
 - [简体中文术语表](glossary.md)：推荐译法、稳定缩写和内部值。
 - [同步上游](upstream-sync.md)：堆叠分支、冲突处理和同步报告工具。
 - [发布检查清单](release-checklist.md)：源码、CI、bundle、安装器和发布后验证。
