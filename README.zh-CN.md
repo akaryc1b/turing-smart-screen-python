@@ -47,6 +47,7 @@
 - [中文字体安装与字体别名](docs/zh-CN/fonts.md)
 - [常见错误排查](docs/zh-CN/troubleshooting.md)
 - [本地化架构说明](docs/zh-CN/LOCALIZATION.md)
+- [简体中文本地化覆盖率审计](docs/zh-CN/localization-coverage.md)
 - [简体中文贡献指南](docs/zh-CN/contributing.md)
 - [Dependency Review 根因与维护边界](docs/zh-CN/dependency-review.md)
 - [简体中文术语表](docs/zh-CN/glossary.md)
