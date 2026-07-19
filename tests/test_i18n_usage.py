@@ -95,6 +95,7 @@ class CatalogQualityTests(unittest.TestCase):
     def setUpClass(cls):
         cls.english = load_catalog("en_US")
         cls.chinese = load_catalog("zh_CN")
+        cls.used_keys, cls.invalid_calls = collect_translation_calls()
 
     def test_catalogs_have_exactly_the_same_keys(self):
         self.assertEqual(set(self.english), set(self.chinese))
@@ -118,11 +119,22 @@ class CatalogQualityTests(unittest.TestCase):
                 text = path.read_bytes().decode("utf-8")
                 self.assertIsInstance(json.loads(text), dict)
 
-    def test_all_literal_translation_keys_exist_and_are_used(self):
-        used_keys, invalid_calls = collect_translation_calls()
-        self.assertEqual([], invalid_calls, "tr() keys must be string literals")
-        self.assertEqual(set(), used_keys - set(self.english), "Unknown tr() keys")
-        self.assertEqual(set(), set(self.english) - used_keys, "Unused catalog keys")
+    def test_translation_keys_are_string_literals(self):
+        self.assertEqual([], self.invalid_calls, "tr() keys must be string literals")
+
+    def test_all_literal_translation_keys_exist(self):
+        self.assertEqual(
+            set(),
+            self.used_keys - set(self.english),
+            "Unknown tr() keys",
+        )
+
+    def test_catalog_entries_are_used(self):
+        self.assertEqual(
+            set(),
+            set(self.english) - self.used_keys,
+            "Unused catalog keys",
+        )
 
 
 class HardcodedChineseTests(unittest.TestCase):
