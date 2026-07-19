@@ -85,7 +85,7 @@ def validate_report(report: Mapping[str, Any], screenshot: Path) -> None:
 
     for section, field in CJK_FIELDS:
         value = str(report.get(section, {}).get(field, ""))
-        if not any("\u3400" <= char <= "\u9fff" for char in value):
+        if not any(0x3400 <= ord(char) <= 0x9FFF for char in value):
             raise FrozenSmokeRunnerError(
                 f"Smoke report field {section}.{field} is not Simplified Chinese"
             )
