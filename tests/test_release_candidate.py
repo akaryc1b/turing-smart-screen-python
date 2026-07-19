@@ -300,6 +300,8 @@ class ReleaseCandidateWorkflowPolicyTests(unittest.TestCase):
         self.assertNotIn("inno-setup.log", source)
         self.assertNotIn("*.log", source)
         self.assertNotIn("ChineseSimplified.isl\n", source)
+        self.assertNotIn("$env:RC_VERSION-", source)
+        self.assertIn("${env:RC_VERSION}-debug", source)
 
 
 if __name__ == "__main__":
