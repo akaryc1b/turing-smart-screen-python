@@ -19,23 +19,34 @@ git fetch upstream --prune
 - `origin`：自己的 Fork `akaryc1b/turing-smart-screen-python`。
 - `upstream`：原项目 `mathoudebine/turing-smart-screen-python`。
 
-## 堆叠分支结构
+## 当前堆叠分支结构
 
-汉化按阶段使用堆叠 Draft PR：
+功能阶段继续使用逐层堆叠 Draft PR：
 
 ```text
 main
-└── agent/zh-cn-i18n-foundation
-    └── agent/zh-cn-configurator
-        └── agent/zh-cn-runtime-editor
-            └── agent/zh-cn-packaging
-                └── agent/zh-cn-font-support
-                    └── agent/zh-cn-theme-docs
-                        └── agent/zh-cn-release-validation
-                            └── agent/zh-cn-maintenance
+└── agent/zh-cn-i18n-foundation          # PR #1
+    └── agent/zh-cn-configurator         # PR #2
+        └── agent/zh-cn-runtime-editor   # PR #3
+            └── agent/zh-cn-packaging    # PR #4
+                └── agent/zh-cn-font-support       # PR #5
+                    └── agent/zh-cn-theme-docs     # PR #6
+                        └── agent/zh-cn-release-validation  # PR #7
+                            └── agent/zh-cn-maintenance      # PR #8
+                                └── agent/zh-cn-security-ci  # PR #9
 ```
 
-每个 PR 只包含一个清晰阶段，base 指向前一阶段。前置 PR 未合并时，不要把后续 PR 直接改为 `main`，否则会把所有前置提交重复显示在 diff 中。
+累计与兼容审查分支使用另一条清晰链路：
+
+```text
+main
+└── agent/zh-cn-integration-review       # PR #10，累计目标为 main
+    └── agent/zh-cn-upstream-compat      # PR #11，基于累计分支
+```
+
+`agent/zh-cn-integration-review` 从 PR #9 的最终 Head 创建，但 PR base 是 `main`，用于触发 CodeQL 和面向主分支的累计保护规则。`agent/zh-cn-upstream-compat` 的 base 必须保持为累计集成分支，避免把兼容审计误混入 PR #9 的阶段 diff。
+
+每个阶段只包含一个清晰目标。前置 PR 未合并时，不要随意把后续堆叠 PR 改为 `main`，否则会把所有前置提交重复显示在 diff 中。重建父分支历史后，应保证后续分支真正以新 Head 为祖先，而不只是复制相同文件内容。
 
 ## 生成上游同步报告
 
@@ -59,6 +70,7 @@ git fetch upstream --prune
 python tools/upstream_sync_report.py \
   --upstream-ref upstream/main \
   --local-ref HEAD \
+  --format markdown \
   --output upstream-sync-report.md
 ```
 
@@ -89,7 +101,50 @@ python tools/upstream_sync_report.py \
 
 > 同步报告检测的是“路径级重叠”，不是语义冲突证明。没有重叠不代表行为一定兼容；存在重叠也不代表应无条件保留 Fork 版本。
 
-报告文件属于本地审查工件，通常不应提交到功能 PR。
+报告文件属于临时审查工件，不应提交到功能 PR。分析结束后确认：
+
+```bash
+git status --short
+```
+
+输出中不得出现 `upstream-sync-report.md`、`upstream-sync-report.json` 或临时审计 workflow。
+
+## 2026-07-19 上游兼容审计记录
+
+本次审计在 GitHub-hosted Ubuntu Runner 上实际获取上游远程，并对累计汉化 Head 执行了上述 Markdown 和 JSON 命令。
+
+记录的引用：
+
+- 上游 `main` Head：`a3a375dbfe52ae8ee48349cb6ff476c4767a232a`。
+- Fork `main` Head：`a3a375dbfe52ae8ee48349cb6ff476c4767a232a`。
+- 汉化累计 Head：`6fb4dc5f8cb5dfea02f47e3c8ac23e999f526e93`。
+- 共同基线：`a3a375dbfe52ae8ee48349cb6ff476c4767a232a`。
+
+机器报告结果：
+
+- 上游变化路径：0。
+- 汉化变化路径：57。
+- 路径级重叠：0。
+- 汉化路径状态：新增 35、修改 22。
+
+由于上游 `main` 与 Fork `main` 完全一致，本次不存在上游新增路径，也不存在需要合并的路径级重叠。以下重点路径均没有“共同基线到上游”的新改动：
+
+- `main.py`
+- `configure.py`
+- `theme-editor.py`
+- `library/config.py`
+- `library/i18n.py`
+- `library/fonts.py`
+- `library/resources.py`
+- `turing-system-monitor.spec`
+- `turing-system-monitor-debug.spec`
+- 发布 workflow
+- Windows 安装器
+- 主题 schema 与中文主题
+
+因此本次没有上游新增用户可见文本需要补入 `locales/en_US.json` 或 `locales/zh_CN.json`，也没有上游生命周期、协议或 UI 结构变化需要重新接入翻译。
+
+这只说明审计时点没有新的上游提交。累计汉化仍必须通过 CodeQL、Localization、flake8、三平台 System Monitor、三平台 Simple Program、主题截图和发布包验证。审计生成的 Markdown、JSON、元数据和临时 workflow 均不进入最终 diff。
 
 ## 同步上游 main
 
@@ -125,7 +180,7 @@ git push --force-with-lease origin main
 
 如果后续分支历史已经包含合并后的相同提交，直接把 PR base 改为新的正确分支或 `main`，然后确认 GitHub diff 只剩本阶段文件。
 
-### 方法二：rebase 后续分支
+### 方法二：重建后续分支祖先关系
 
 ```bash
 git switch agent/zh-cn-runtime-editor
@@ -133,7 +188,14 @@ git rebase --onto agent/zh-cn-configurator <旧父提交> agent/zh-cn-runtime-ed
 git push --force-with-lease origin agent/zh-cn-runtime-editor
 ```
 
-对下一层重复执行。操作前记录每个分支 head SHA，避免把堆叠关系改乱。完成后逐个检查 PR 的 base、head 和 changed files。
+对下一层重复执行。操作前记录每个分支 Head SHA，避免把堆叠关系改乱。完成后逐个检查：
+
+- PR base SHA 等于前一阶段当前 Head。
+- 分支相对 base 为 ahead 且 behind 为 0。
+- changed files 只属于当前阶段。
+- PR 仍为 Open Draft，未合并且未启用 auto-merge。
+
+仅把相同文件内容复制到后续分支，不能替代正确的 Git 祖先关系。
 
 ## 处理翻译冲突
 
@@ -196,6 +258,7 @@ git push --force-with-lease origin agent/zh-cn-runtime-editor
 - Windows 正式版、Debug 版和 Linux 包仍运行 `tools/validate_release_bundle.py`。
 - 简体中文安装器翻译仍固定到不可变提交并验证 Git blob。
 - `Release bundle validation` 仍构建真实产物而不只检查 YAML 或 spec 文本。
+- 最终 workflow 不上传编译日志或其他诊断工件。
 
 ### 主题冲突
 
