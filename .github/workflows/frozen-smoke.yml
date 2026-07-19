@@ -91,14 +91,12 @@ jobs:
             --timeout-seconds 90
 
       - name: Archive Windows frozen smoke evidence
-        if: always()
         uses: actions/upload-artifact@v7
         with:
           name: frozen-zh-cn-smoke-windows
           path: |
             frozen-smoke-artifacts/frozen-smoke.png
             frozen-smoke-artifacts/frozen-smoke-report.json
-            frozen-smoke-artifacts/frozen-smoke-diagnostic.json
           if-no-files-found: error
           retention-days: 14
 
@@ -132,13 +130,11 @@ jobs:
             --timeout-seconds 90
 
       - name: Archive Linux frozen smoke evidence
-        if: always()
         uses: actions/upload-artifact@v7
         with:
           name: frozen-zh-cn-smoke-linux
           path: |
             frozen-smoke-artifacts/frozen-smoke.png
             frozen-smoke-artifacts/frozen-smoke-report.json
-            frozen-smoke-artifacts/frozen-smoke-diagnostic.json
           if-no-files-found: error
           retention-days: 14
