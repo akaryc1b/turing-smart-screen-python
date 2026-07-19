@@ -131,7 +131,9 @@ class ReleaseWorkflowIntegrationTests(unittest.TestCase):
         self.assertIn("windows-latest", source)
         self.assertIn("ubuntu-latest", source)
         self.assertIn("validate_release_bundle.py", source)
-        self.assertIn("Inno-Setup-Action", source)
+        self.assertIn("choco install innosetup", source)
+        self.assertIn("ISCC.exe", source)
+        self.assertIn("inno-setup.log", source)
         self.assertIn("cancel-in-progress: true", source)
 
     def test_windows_installer_offers_simplified_chinese(self):
