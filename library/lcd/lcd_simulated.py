@@ -125,6 +125,13 @@ class LcdSimulated(LcdComm):
         if not image_width:
             image_width = image.size[0]
 
+        # Missing glyphs in a fallback font can produce an empty text bitmap.
+        # The simulator should keep rendering the remaining theme instead of
+        # failing a hardware-independent preview with a zero-size assertion.
+        if image_height <= 0 or image_width <= 0:
+            logger.warning("Skipping an empty image in the simulated display")
+            return
+
         # If image is bigger than display, crop it
         if image.size[1] > self.get_height():
             image_height = self.get_height()
