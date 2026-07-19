@@ -21,7 +21,38 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Create temporary source snapshot
-        run: tar --exclude=.git -C "$GITHUB_WORKSPACE" -czf "$RUNNER_TEMP/source-snapshot.tar.gz" .
+        env:
+          SNAPSHOT_PATH: ${{ runner.temp }}/source-snapshot.tar.gz
+        run: |
+          python - <<'PY'
+          import os
+          import tarfile
+          from pathlib import Path
+
+          root = Path.cwd()
+          requested = [
+              '.github',
+              'docs',
+              'library',
+              'locales',
+              'tests',
+              'tools',
+              'configure.py',
+              'theme-editor.py',
+              'main.py',
+              'README.md',
+              'README.zh-CN.md',
+              'requirements.txt',
+              'requirements-dev.txt',
+              'setup.cfg',
+              'pyproject.toml',
+          ]
+          with tarfile.open(os.environ['SNAPSHOT_PATH'], 'w:gz') as archive:
+              for name in requested:
+                  path = root / name
+                  if path.exists():
+                      archive.add(path, arcname=name)
+          PY
 
       - name: Upload temporary source snapshot
         uses: actions/upload-artifact@v7
