@@ -9,8 +9,10 @@ on:
       - 'locales/**'
       - 'res/fonts/**'
       - 'res/themes/3.5inchTheme2-zh-CN/**'
+      - 'tools/build_release_manifest.py'
       - 'tools/validate_release_bundle.py'
       - 'tools/windows-installer/**'
+      - 'tests/test_release_candidate.py'
       - 'tests/test_release_validation.py'
       - 'turing-system-monitor.spec'
       - 'turing-system-monitor-debug.spec'
@@ -18,6 +20,7 @@ on:
       - '.github/workflows/generate-windows-packages.yml'
       - '.github/workflows/generate-windows-packages-debug.yml'
       - '.github/workflows/release-bundle-validation.yml'
+      - '.github/workflows/release-candidate.yml'
   workflow_dispatch:
 
 permissions:
@@ -48,11 +51,17 @@ jobs:
       - name: Validate Python syntax
         run: |
           python -m py_compile \
+            tools/build_release_manifest.py \
             tools/validate_release_bundle.py \
+            tests/test_release_candidate.py \
             tests/test_release_validation.py
 
       - name: Run release validation tests
-        run: python -m unittest tests.test_release_validation -v
+        run: |
+          python -m unittest \
+            tests.test_release_candidate \
+            tests.test_release_validation \
+            -v
 
   windows-bundles:
     name: Windows ${{ matrix.kind }} bundle
