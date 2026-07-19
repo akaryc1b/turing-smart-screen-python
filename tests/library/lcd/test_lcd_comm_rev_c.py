@@ -1,6 +1,6 @@
 import unittest
 
-from library.lcd.lcd_comm_rev_c import LcdCommRevC, Orientation
+from library.lcd.lcd_comm_rev_c import LcdCommRevC, Orientation, SubRevision
 
 from .serial_mock import new_testing_serial
 from .sample_image import generate_sample_image
@@ -9,12 +9,18 @@ from .sample_image import generate_sample_image
 class MockedLcdCommRevC(LcdCommRevC):
     def openSerial(self):
         self.lcd_serial = new_testing_serial()
+        # Real revision-C devices populate these values during the HELLO handshake.
+        # Unit tests bypass InitializeComm(), so model the default 480x800 device here.
+        self.sub_revision = SubRevision.REV_5INCH
+        self.rom_version = 87
 
     def expect_golden(self, tc: unittest.TestCase, fn: str):
         self.lcd_serial.expect_golden(tc, fn)
 
+
 sample_img_portrait = generate_sample_image(480, 800)
 sample_img_landscape = generate_sample_image(800, 480)
+
 
 class TestLcdCommRevC(unittest.TestCase):
     def test_set_brightness(self):
