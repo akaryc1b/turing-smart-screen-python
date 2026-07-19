@@ -234,7 +234,33 @@ def _archive_members(path: Path, archive_type: str) -> List[PurePosixPath]:
     return members
 
 
-def _validate_archive(path: Path, archive_type: str, platform_name: str) -> Dict[str, Any]:
+def _read_archive_text(path: Path, archive_type: str, member_name: str) -> str:
+    try:
+        if archive_type == "zip":
+            with zipfile.ZipFile(path) as archive:
+                payload = archive.read(member_name)
+        else:
+            with tarfile.open(path, mode="r:gz") as archive:
+                member = archive.getmember(member_name)
+                handle = archive.extractfile(member)
+                if handle is None:
+                    raise ReleaseManifestError(
+                        f"Archive member cannot be read as a file: {member_name}"
+                    )
+                payload = handle.read()
+        return payload.decode("utf-8-sig").strip()
+    except (KeyError, OSError, UnicodeDecodeError, zipfile.BadZipFile, tarfile.TarError) as exc:
+        raise ReleaseManifestError(
+            f"Cannot read archive text member {member_name} from {path}: {exc}"
+        ) from exc
+
+
+def _validate_archive(
+    path: Path,
+    archive_type: str,
+    platform_name: str,
+    expected_version: str,
+) -> Dict[str, Any]:
     members = _archive_members(path, archive_type)
     if not members:
         raise ReleaseManifestError(f"Archive contains no members: {path}")
@@ -258,6 +284,14 @@ def _validate_archive(path: Path, archive_type: str, platform_name: str) -> Dict
     ]
     if missing:
         raise ReleaseManifestError(f"Archive is missing required packaged paths: {missing}")
+
+    version_member = f"{ARCHIVE_ROOT}/version.txt"
+    packaged_version = _read_archive_text(path, archive_type, version_member)
+    if packaged_version != expected_version:
+        raise ReleaseManifestError(
+            f"Archive version mismatch: expected {expected_version!r}, "
+            f"got {packaged_version!r}"
+        )
 
     return {
         "format": archive_type,
@@ -306,7 +340,10 @@ def build_entry(
     archive_type = contract.get("archive")
     if archive_type:
         artifact_metadata["archive"] = _validate_archive(
-            path, archive_type, platform_name
+            path,
+            archive_type,
+            platform_name,
+            f"{version}-debug" if kind == "windows-debug-portable" else version,
         )
 
     catalogs = {
