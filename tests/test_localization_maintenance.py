@@ -13,7 +13,9 @@ MARKDOWN_LINK = re.compile(r"\[[^\]]+\]\(([^)]+)\)")
 
 class ChineseDocumentationIndexTests(unittest.TestCase):
     def test_root_and_directory_indexes_link_every_chinese_guide(self):
-        root_readme = (REPOSITORY_ROOT / "README.zh-CN.md").read_text(encoding="utf-8")
+        root_readme = (REPOSITORY_ROOT / "README.zh-CN.md").read_text(
+            encoding="utf-8"
+        )
         docs_index = (CHINESE_DOCS / "README.md").read_text(encoding="utf-8")
         guides = sorted(
             path.name
@@ -136,12 +138,32 @@ class MaintenanceGuideContentTests(unittest.TestCase):
             "tools/upstream_sync_report.py",
             "--upstream-ref upstream/main",
             "--local-ref HEAD",
+            "--format markdown",
             "--format json",
             "--fail-on-overlap",
             "路径级重叠",
             "agent/zh-cn-release-validation",
             "agent/zh-cn-maintenance",
+            "agent/zh-cn-security-ci",
+            "agent/zh-cn-integration-review",
+            "agent/zh-cn-upstream-compat",
             "python -m unittest discover -s tests -t . -v",
+        ):
+            with self.subTest(marker=marker):
+                self.assertIn(marker, source)
+
+    def test_upstream_sync_guide_records_latest_verified_audit(self):
+        source = (CHINESE_DOCS / "upstream-sync.md").read_text(encoding="utf-8")
+
+        for marker in (
+            "2026-07-19 上游兼容审计记录",
+            "a3a375dbfe52ae8ee48349cb6ff476c4767a232a",
+            "6fb4dc5f8cb5dfea02f47e3c8ac23e999f526e93",
+            "上游变化路径：0",
+            "汉化变化路径：57",
+            "路径级重叠：0",
+            "新增 35、修改 22",
+            "没有上游新增用户可见文本",
         ):
             with self.subTest(marker=marker):
                 self.assertIn(marker, source)
@@ -161,7 +183,9 @@ class MaintenanceGuideContentTests(unittest.TestCase):
         for relative_path in (
             "upstream-sync-report.md",
             "upstream-sync-report.json",
+            "upstream-sync-metadata.json",
             "tools/windows-installer/languages/ChineseSimplified.isl",
+            ".github/workflows/upstream-compat-audit-temporary.yml",
         ):
             with self.subTest(relative_path=relative_path):
                 self.assertFalse((REPOSITORY_ROOT / relative_path).exists())
