@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "entries": [
+    {
+      "path": "locales/zh_CN.json",
+      "rule": "zh-entry-without-cjk",
+      "key": "model.usb_pc_monitor",
+      "category": "product-name",
+      "reason": "UsbPCMonitor is the stable upstream product name."
+    },
+    {
+      "path": "locales/zh_CN.json",
+      "rule": "zh-entry-without-cjk",
+      "key": "model.weact",
+      "category": "product-name",
+      "reason": "WeAct Studio Display FS V1 is the stable product name."
+    }
+  ]
+}
