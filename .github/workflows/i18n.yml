@@ -79,6 +79,18 @@ jobs:
       - name: Run localization unit tests
         run: python -m unittest tests.test_i18n -v
 
+      - name: Check catalog keys, placeholders and usage
+        run: python -m unittest tests.test_i18n_usage -v
+
+      - name: Check packaged localization resources
+        run: python -m unittest tests.test_packaged_resources -v
+
+      - name: Check CJK font discovery
+        run: python -m unittest tests.test_font_discovery -v
+
+      - name: Check Chinese theme assets and layout
+        run: python -m unittest tests.test_chinese_theme -v
+
       - name: Run complete test discovery
         run: python -m unittest discover -s tests -v
 
