@@ -1,9 +1,7 @@
 name: Temporary stage 14 core apply
 
 on:
-  push:
-    branches:
-      - agent/zh-cn-coverage-audit
+  pull_request:
     paths:
       - '.stage14/localization-core.tar.zst.b64'
       - '.github/workflows/stage14-apply-temporary.yml'
@@ -12,7 +10,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: temporary-stage14-core-apply
+  group: temporary-stage14-core-apply-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
 jobs:
@@ -21,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - name: Check out branch
+      - name: Check out stage branch
         uses: actions/checkout@v6
         with:
           ref: agent/zh-cn-coverage-audit
