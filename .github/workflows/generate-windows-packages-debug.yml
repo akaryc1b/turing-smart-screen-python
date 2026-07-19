@@ -39,6 +39,10 @@ jobs:
       run: |
         python.exe tools/validate_release_bundle.py .\dist\turing-system-monitor --platform windows
 
+    - name: Prepare pinned Simplified Chinese installer translation
+      shell: pwsh
+      run: .\tools\windows-installer\prepare-inno-languages.ps1
+
     - name: Create InnoSetup installer from generated binaries
       uses: Minionguyjpro/Inno-Setup-Action@v1.2.8
       with:
