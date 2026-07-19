@@ -35,6 +35,10 @@ jobs:
         pyinstaller.exe --noconfirm turing-system-monitor-debug.spec
         "${{github.event.release.tag_name}}-debug" | Out-File ".\dist\turing-system-monitor\version.txt"
 
+    - name: Validate generated debug bundle
+      run: |
+        python.exe tools\validate_release_bundle.py .\dist\turing-system-monitor --platform windows
+
     - name: Create InnoSetup installer from generated binaries
       uses: Minionguyjpro/Inno-Setup-Action@v1.2.8
       with:
