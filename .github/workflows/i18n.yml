@@ -79,8 +79,40 @@ jobs:
       - name: Run localization unit tests
         run: python -m unittest tests.test_i18n -v
 
-      - name: Check catalog keys, placeholders and usage
-        run: python -m unittest tests.test_i18n_usage -v
+      - name: Check catalog key equality
+        run: >-
+          python -m unittest
+          tests.test_i18n_usage.CatalogQualityTests.test_catalogs_have_exactly_the_same_keys -v
+
+      - name: Check catalog placeholder equality
+        run: >-
+          python -m unittest
+          tests.test_i18n_usage.CatalogQualityTests.test_named_placeholders_match_for_every_key -v
+
+      - name: Check catalog UTF-8 JSON
+        run: >-
+          python -m unittest
+          tests.test_i18n_usage.CatalogQualityTests.test_catalog_files_are_valid_utf8_json -v
+
+      - name: Check translation key usage
+        run: >-
+          python -m unittest
+          tests.test_i18n_usage.CatalogQualityTests.test_all_literal_translation_keys_exist_and_are_used -v
+
+      - name: Check core Python for hardcoded Chinese
+        run: >-
+          python -m unittest
+          tests.test_i18n_usage.HardcodedChineseTests.test_core_python_does_not_embed_user_visible_chinese -v
+
+      - name: Check stable configurator values
+        run: >-
+          python -m unittest
+          tests.test_i18n_usage.StableConfigurationValueTests.test_configurator_maps_keep_stable_internal_keys -v
+
+      - name: Check default protocol values
+        run: >-
+          python -m unittest
+          tests.test_i18n_usage.StableConfigurationValueTests.test_default_config_keeps_protocol_values -v
 
       - name: Check packaged localization resources
         run: python -m unittest tests.test_packaged_resources -v
