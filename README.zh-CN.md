@@ -40,12 +40,17 @@
 
 ## 文档导航
 
+- [简体中文文档索引](docs/zh-CN/README.md)
 - [安装说明](docs/zh-CN/installation.md)
 - [配置向导与配置文件](docs/zh-CN/configuration.md)
 - [主题制作与中文示例主题](docs/zh-CN/themes.md)
 - [中文字体安装与字体别名](docs/zh-CN/fonts.md)
 - [常见错误排查](docs/zh-CN/troubleshooting.md)
+- [本地化架构说明](docs/zh-CN/LOCALIZATION.md)
+- [简体中文贡献指南](docs/zh-CN/contributing.md)
+- [简体中文术语表](docs/zh-CN/glossary.md)
 - [同步上游与处理分支冲突](docs/zh-CN/upstream-sync.md)
+- [简体中文版本发布检查清单](docs/zh-CN/release-checklist.md)
 
 ## 快速开始
 
@@ -133,3 +138,5 @@ TURING_LANGUAGE=zh_CN python configure.py
 - `AUTO`、`TUR_USB`、`SIMU`、`DISPLAY_REVERSE`、`metric`、`imperial`、`standard` 等稳定值保持不变。
 - 英文默认行为和社区主题格式保持兼容。
 - 汉化功能通过堆叠 Draft PR 开发，不自动合并。
+
+提交翻译、中文主题、打包或维护改动前，请阅读[本地化架构说明](docs/zh-CN/LOCALIZATION.md)、[简体中文贡献指南](docs/zh-CN/contributing.md)和[简体中文术语表](docs/zh-CN/glossary.md)。准备发布时使用[发布检查清单](docs/zh-CN/release-checklist.md)，同步上游前先生成路径重叠报告。
