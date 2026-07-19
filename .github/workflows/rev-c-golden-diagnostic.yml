@@ -1,0 +1,34 @@
+name: Rev C golden diagnostic
+
+on:
+  pull_request:
+    paths:
+      - 'tests/library/lcd/test_lcd_comm_rev_c.py'
+      - '.github/workflows/rev-c-golden-diagnostic.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  record-rev-c-goldens:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: python -m pip install --disable-pip-version-check -r requirements.txt
+
+      - name: Record revision C golden fixtures
+        env:
+          RECORD_GOLDEN: '1'
+        run: python -m unittest tests.library.lcd.test_lcd_comm_rev_c -v
+
+      - name: Archive generated revision C goldens
+        uses: actions/upload-artifact@v7
+        with:
+          name: rev-c-generated-goldens
+          path: tests/library/lcd/golden/rev_c_*.txt
