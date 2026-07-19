@@ -13,6 +13,7 @@
 ## 维护者文档
 
 - [本地化架构说明](LOCALIZATION.md)：语言选择、词库契约、冻结资源和已完成范围。
+- [本地化覆盖率审计](localization-coverage.md)：翻译键、占位符、硬编码文本、允许列表和 CI 报告。
 - [简体中文贡献指南](contributing.md)：词库、代码、主题、打包和 PR 规则。
 - [Dependency Review 根因与维护边界](dependency-review.md)：Fork 平台限制、运行证据和不可弱化的安全 CI 合同。
 - [简体中文术语表](glossary.md)：推荐译法、稳定缩写和内部值。
