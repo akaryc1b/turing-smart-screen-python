@@ -6,6 +6,11 @@ on:
       - agent/zh-cn-upstream-compat
     paths:
       - '.github/workflows/upstream-compat-audit-temporary.yml'
+  pull_request:
+    branches:
+      - agent/zh-cn-integration-review
+    paths:
+      - '.github/workflows/upstream-compat-audit-temporary.yml'
 
 permissions:
   contents: read
