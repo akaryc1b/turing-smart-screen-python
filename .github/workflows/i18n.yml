@@ -130,8 +130,45 @@ jobs:
       - name: Check CJK font discovery
         run: python -m unittest tests.test_font_discovery -v
 
-      - name: Check Chinese theme assets and layout
-        run: python -m unittest tests.test_chinese_theme -v
+      - name: Check Chinese theme target and independence
+        run: >-
+          python -m unittest
+          tests.test_chinese_theme.ChineseThemeTests.test_theme_is_independent_and_targets_35_inch_portrait -v
+
+      - name: Check Chinese theme PNG assets
+        run: >-
+          python -m unittest
+          tests.test_chinese_theme.ChineseThemeTests.test_background_and_preview_are_valid_320_by_480_png_files -v
+
+      - name: Check Chinese theme image references
+        run: >-
+          python -m unittest
+          tests.test_chinese_theme.ChineseThemeTests.test_static_image_files_exist -v
+
+      - name: Check Chinese theme layout bounds
+        run: >-
+          python -m unittest
+          tests.test_chinese_theme.ChineseThemeTests.test_all_explicit_rectangles_stay_inside_display -v
+
+      - name: Check Chinese theme font aliases
+        run: >-
+          python -m unittest
+          tests.test_chinese_theme.ChineseThemeTests.test_chinese_static_labels_use_system_cjk_aliases -v
+
+      - name: Check required Chinese theme labels
+        run: >-
+          python -m unittest
+          tests.test_chinese_theme.ChineseThemeTests.test_required_chinese_labels_are_present -v
+
+      - name: Check stable metric abbreviations
+        run: >-
+          python -m unittest
+          tests.test_chinese_theme.ChineseThemeTests.test_common_metric_abbreviations_remain_stable -v
+
+      - name: Check Chinese theme has no font binaries
+        run: >-
+          python -m unittest
+          tests.test_chinese_theme.ChineseThemeTests.test_theme_does_not_vendor_font_binaries -v
 
       - name: Run complete test discovery
         run: python -m unittest discover -s tests -v
