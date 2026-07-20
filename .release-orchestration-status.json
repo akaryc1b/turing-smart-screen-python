@@ -1,11 +1,11 @@
 {
-  "phase": "rc_succeeded",
-  "detail": "Release candidate run 29760035791 succeeded",
+  "phase": "publish_running",
+  "detail": "Localized publisher run 29760585792 is running",
   "version": "3.10.0",
   "main_sha": "b472e8cee1a74d8170052b3c22f2953f5f2126d7",
   "localization_revision": "2",
   "tag": "3.10.0-zh-cn.2",
   "rc_run_id": "29760035791",
-  "publish_run_id": "",
-  "updated_at": "2026-07-20T16:40:10Z"
+  "publish_run_id": "29760585792",
+  "updated_at": "2026-07-20T16:40:19Z"
 }
