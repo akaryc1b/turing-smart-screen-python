@@ -7,10 +7,18 @@ on:
       - 'releases/**'
   pull_request:
 
+permissions:
+  contents: read
+
+concurrency:
+  group: simple-program-macos-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   simple-program:
     name: Simple program (MacOS)
     runs-on: macos-latest
+    timeout-minutes: 20
 
     strategy:
       fail-fast: false

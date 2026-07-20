@@ -18,6 +18,7 @@ on:
       - 'tools/localization-allowlist.json'
       - 'tests/test_localization_coverage.py'
       - '.github/workflows/localization-coverage.yml'
+      - 'tests/test_repository_hygiene.py'
       - 'tools/upstream_sync_report.py'
       - 'tests/test_i18n.py'
       - 'tests/test_i18n_usage.py'
@@ -50,6 +51,7 @@ on:
       - 'tools/localization-allowlist.json'
       - 'tests/test_localization_coverage.py'
       - '.github/workflows/localization-coverage.yml'
+      - 'tests/test_repository_hygiene.py'
       - 'tools/upstream_sync_report.py'
       - 'tests/test_i18n.py'
       - 'tests/test_i18n_usage.py'
@@ -74,6 +76,7 @@ concurrency:
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - name: Check out repository
         uses: actions/checkout@v6
@@ -106,6 +109,7 @@ jobs:
             tests/test_chinese_theme.py \
             tests/test_upstream_sync_report.py \
             tests/test_localization_maintenance.py \
+            tests/test_repository_hygiene.py \
             tests/test_dependency_review_policy.py
 
       - name: Run localization unit tests
@@ -212,6 +216,7 @@ jobs:
           python -m unittest
           tests.test_upstream_sync_report
           tests.test_localization_maintenance
+          tests.test_repository_hygiene
           tests.test_dependency_review_policy -v
 
       - name: Run complete test discovery

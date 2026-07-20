@@ -42,9 +42,13 @@ main
 main
 └── agent/zh-cn-integration-review       # PR #10，累计目标为 main
     └── agent/zh-cn-upstream-compat      # PR #11，基于累计分支
+        └── agent/zh-cn-release-candidate    # PR #12，手动发布候选验证
+            └── agent/zh-cn-frozen-smoke     # PR #13，冻结简体中文冒烟
+                └── agent/zh-cn-coverage-audit   # PR #14，本地化覆盖率审计
+                    └── agent/zh-cn-final-maintenance  # PR #15，最终维护审查
 ```
 
-`agent/zh-cn-integration-review` 从 PR #9 的最终 Head 创建，但 PR base 是 `main`，用于触发 CodeQL 和面向主分支的累计保护规则。`agent/zh-cn-upstream-compat` 的 base 必须保持为累计集成分支，避免把兼容审计误混入 PR #9 的阶段 diff。
+`agent/zh-cn-integration-review` 从 PR #9 的最终 Head 创建，但 PR base 是 `main`，用于触发 CodeQL 和面向主分支的累计保护规则。PR #11 至 PR #15 必须逐层以前一阶段分支为 base；每个后续分支的 merge base 应等于前一阶段最终 Head，且相对 base 必须为 ahead、behind 为 0，避免把兼容、发布、冻结、覆盖率和最终维护内容重复混入更早阶段的 diff。
 
 每个阶段只包含一个清晰目标。前置 PR 未合并时，不要随意把后续堆叠 PR 改为 `main`，否则会把所有前置提交重复显示在 diff 中。重建父分支历史后，应保证后续分支真正以新 Head 为祖先，而不只是复制相同文件内容。
 

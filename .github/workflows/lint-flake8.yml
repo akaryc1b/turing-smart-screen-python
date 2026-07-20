@@ -7,10 +7,18 @@ on:
       - 'releases/**'
   pull_request:
 
+permissions:
+  contents: read
+
+concurrency:
+  group: lint-flake8-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   lint-flake8:
     name: Lint with flake8
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     steps:
     - uses: actions/checkout@v6

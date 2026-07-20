@@ -3,10 +3,18 @@ name: System monitor - themes screenshot (on PR)
 on:
   pull_request:
 
+permissions:
+  contents: read
+
+concurrency:
+  group: themes-screenshot-pr-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   system-monitor-theme-screenshot:
     name: Generate screenshot for all themes
     runs-on: ubuntu-latest
+    timeout-minutes: 45
 
     steps:
     - uses: actions/checkout@v6

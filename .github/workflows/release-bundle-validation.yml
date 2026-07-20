@@ -34,6 +34,7 @@ jobs:
   static-validation:
     name: Validate release rules
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Check out repository
         uses: actions/checkout@v6
@@ -67,6 +68,7 @@ jobs:
     name: Windows ${{ matrix.kind }} bundle
     needs: static-validation
     runs-on: windows-latest
+    timeout-minutes: 45
     strategy:
       fail-fast: false
       matrix:
@@ -140,6 +142,7 @@ jobs:
     name: Linux release bundle
     needs: static-validation
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     steps:
       - name: Check out repository
         uses: actions/checkout@v6

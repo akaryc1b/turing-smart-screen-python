@@ -7,10 +7,18 @@ on:
       - 'releases/**'
   pull_request:
 
+permissions:
+  contents: read
+
+concurrency:
+  group: simple-program-windows-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   simple-program:
     name: Simple program (Windows)
     runs-on: windows-latest
+    timeout-minutes: 20
 
     strategy:
       fail-fast: false
@@ -32,7 +40,7 @@ jobs:
     - name: Run simple-program.py during 20 seconds
       run: |
         # For tests there is no real HW: use simulated LCD mode
-        (Get-Content simple-program.py) -replace "^REVISION.*$","REVISION=`"SIMU`"" | Set-Content  simple-program.py
+        (Get-Content simple-program.py) -replace "^REVISION.*$","REVISION=`\"SIMU`\"" | Set-Content  simple-program.py
         
         # Run the program for 20s
         Start-Process -NoNewWindow python3 simple-program.py -RedirectStandardOutput output.log -RedirectStandardError error.log

@@ -6,7 +6,7 @@
 >
 > 与厂商原版 `USBMonitor.exe`、`ExtendScreen.exe`、硬件质量或售后有关的问题，请联系对应厂商、官方论坛或销售商，不要作为本项目的软件缺陷提交。
 
-`turing-smart-screen-python` 是由 [mathoudebine](https://github.com/mathoudebine) 发起的 GPL-3.0 开源项目，用 Python 为小型 USB-C IPS 屏幕提供跨平台系统监控程序和统一显示抽象层。
+`turing-smart-screen-python` 是由 [mathoudebine](https://github.com/mathoudebine) 发赵的 GPL-3.0 开源项目，用 Python 为小型 USB-C IPS 屏幕提供跨平台系统监控程序和统一显示抽象层。
 
 本简体中文版本基于上游项目持续维护，保留原作者版权、GPL-3.0 许可证和上游项目链接：
 
@@ -47,12 +47,13 @@
 - [中文字体安装与字体别名](docs/zh-CN/fonts.md)
 - [常见错误排查](docs/zh-CN/troubleshooting.md)
 - [本地化架构说明](docs/zh-CN/LOCALIZATION.md)
-- [简体中文本地化覆盖率审计](docs/zh-CN/localization-coverage.md)
 - [简体中文贡献指南](docs/zh-CN/contributing.md)
 - [Dependency Review 根因与维护边界](docs/zh-CN/dependency-review.md)
 - [简体中文术语表](docs/zh-CN/glossary.md)
 - [同步上游与处理分支冲突](docs/zh-CN/upstream-sync.md)
 - [简体中文版本发布检查清单](docs/zh-CN/release-checklist.md)
+- [本地化覆盖率审计](docs/zh-CN/localization-coverage.md)
+- [最终维护审查](docs/zh-CN/final-maintenance.md)
 
 ## 快速开始
 
@@ -141,4 +142,4 @@ TURING_LANGUAGE=zh_CN python configure.py
 - 英文默认行为和社区主题格式保持兼容。
 - 汉化功能通过堆叠 Draft PR 开发，不自动合并。
 
-提交翻译、中文主题、打包或维护改动前，请阅读[本地化架构说明](docs/zh-CN/LOCALIZATION.md)、[简体中文贡献指南](docs/zh-CN/contributing.md)和[简体中文术语表](docs/zh-CN/glossary.md)。准备发布时使用[发布检查清单](docs/zh-CN/release-checklist.md)，同步上游前先生成路径重叠报告。
+提交翻译、中文主题、打包或维护改动前，请阅读[本地化架构说明](docs/zh-CN/LOCALIZATION.md)、[简体中文贡献指南](docs/zh-CN/contributing.md)和[简体中文术语表](docs/zh-CN/glossary.md)。准备发布时使用[发布检查清单](docs/zh-CN/release-checklist.md)，同步上游前先生戓路径重叠报告。

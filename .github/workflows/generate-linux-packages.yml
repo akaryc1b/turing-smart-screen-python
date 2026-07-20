@@ -7,10 +7,15 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: generate-linux-packages-${{ github.event.release.tag_name || github.ref }}
+  cancel-in-progress: false
+
 jobs:
   generate-linux-package:
     name: Generate Linux Packages
     runs-on: ubuntu-latest
+    timeout-minutes: 45
 
     steps:
     - name: Git Checkout ${{github.event.release.tag_name}}

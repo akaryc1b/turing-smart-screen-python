@@ -7,10 +7,18 @@ on:
       - 'releases/**'
   pull_request:
 
+permissions:
+  contents: read
+
+concurrency:
+  group: system-monitor-windows-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   system-monitor:
     name: System monitor (Windows)
     runs-on: windows-latest
+    timeout-minutes: 20
 
     strategy:
       fail-fast: false
