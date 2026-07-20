@@ -48,72 +48,35 @@ jobs:
       - name: Validate maintenance safeguards
         run: python3 .stage15/validate.py
 
-      - name: Cancel obsolete pull request runs
-        env:
-          GH_TOKEN: ${{ github.token }}
-          GH_REPOSITORY: ${{ github.repository }}
-          HEAD_BRANCH: ${{ github.head_ref }}
-          CURRENT_RUN_ID: ${{ github.run_id }}
+      - name: Package validated source
         run: |
-          python3 - <<'PY'
-          import json
-          import os
-          import urllib.error
-          import urllib.parse
-          import urllib.request
+          tar -czf /tmp/stage15-validated-source.tar.gz \
+            .github/workflows/codeql.yml \
+            .github/workflows/generate-linux-packages.yml \
+            .github/workflows/generate-windows-packages-debug.yml \
+            .github/workflows/generate-windows-packages.yml \
+            .github/workflows/i18n.yml \
+            .github/workflows/lint-flake8.yml \
+            .github/workflows/release-bundle-validation.yml \
+            .github/workflows/simple-program-linux.yml \
+            .github/workflows/simple-program-macos.yml \
+            .github/workflows/simple-program-windows.yml \
+            .github/workflows/system-monitor-linux.yml \
+            .github/workflows/system-monitor-macos.yml \
+            .github/workflows/system-monitor-windows.yml \
+            .github/workflows/themes-screenshot-on-pr.yml \
+            .github/workflows/themes-screenshot-on-push.yml \
+            README.zh-CN.md \
+            docs/zh-CN/README.md \
+            docs/zh-CN/final-maintenance.md \
+            docs/zh-CN/upstream-sync.md \
+            tests/test_repository_hygiene.py
+          sha256sum /tmp/stage15-validated-source.tar.gz
 
-          repository = os.environ['GH_REPOSITORY']
-          branch = os.environ['HEAD_BRANCH']
-          current_run = int(os.environ['CURRENT_RUN_ID'])
-          headers = {
-              'Accept': 'application/vnd.github+json',
-              'Authorization': f"Bearer {os.environ['GH_TOKEN']}",
-              'X-GitHub-Api-Version': '2022-11-28',
-          }
-          cancelled = []
-          page = 1
-          while True:
-              query = urllib.parse.urlencode({
-                  'branch': branch,
-                  'event': 'pull_request',
-                  'per_page': 100,
-                  'page': page,
-              })
-              url = f'https://api.github.com/repos/{repository}/actions/runs?{query}'
-              request = urllib.request.Request(url, headers=headers)
-              with urllib.request.urlopen(request) as response:
-                  runs = json.load(response)['workflow_runs']
-              if not runs:
-                  break
-              for run in runs:
-                  run_id = int(run['id'])
-                  if run_id == current_run or run['status'] == 'completed':
-                      continue
-                  cancel_url = (
-                      f'https://api.github.com/repos/{repository}'
-                      f'/actions/runs/{run_id}/cancel'
-                  )
-                  cancel_request = urllib.request.Request(
-                      cancel_url,
-                      data=b'',
-                      headers=headers,
-                      method='POST',
-                  )
-                  try:
-                      with urllib.request.urlopen(cancel_request) as response:
-                          response.read()
-                      cancelled.append(run_id)
-                  except urllib.error.HTTPError as error:
-                      if error.code not in (409, 422):
-                          raise
-              page += 1
-          print(f'Cancelled {len(cancelled)} obsolete run(s): {cancelled}')
-          PY
-
-      - name: Commit final maintenance safeguards
-        run: |
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -A
-          git commit -m 'chore: enforce final localization maintenance safeguards'
-          git push origin HEAD:${{ github.head_ref }}
+      - name: Upload validated source
+        uses: actions/upload-artifact@v7
+        with:
+          name: stage15-validated-source
+          path: /tmp/stage15-validated-source.tar.gz
+          if-no-files-found: error
+          retention-days: 1
