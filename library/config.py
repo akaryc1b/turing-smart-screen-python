@@ -24,20 +24,46 @@ import os
 import queue
 import sys
 from pathlib import Path
+
 import yaml
 
+from library.fonts import resolve_theme_font
 from library.log import logger
 
 
 def load_yaml(configfile):
-    with open(configfile, "rt", encoding='utf8') as stream:
+    with open(configfile, "rt", encoding="utf8") as stream:
         yamlconfig = yaml.safe_load(stream)
         return yamlconfig
 
 
 PATH = sys.path[0]
 MAIN_DIRECTORY = Path(__file__).parent.parent.resolve()
-FONTS_DIR = str(MAIN_DIRECTORY / "res" / "fonts") + "/"
+_FONT_DIRECTORY = MAIN_DIRECTORY / "res" / "fonts"
+
+
+def font_path(font_config):
+    """Resolve a theme FONT value while preserving legacy relative paths."""
+
+    return resolve_theme_font(font_config, fonts_dir=_FONT_DIRECTORY)
+
+
+class ThemeFontDirectory(str):
+    """Backward-compatible adapter for existing ``FONTS_DIR + FONT`` calls.
+
+    Theme YAML continues to store a relative font path. The adapter behaves as
+    the previous string directory for existing paths and additionally resolves
+    explicit system font aliases before Pillow receives the final file path.
+    """
+
+    def __new__(cls, directory):
+        return super().__new__(cls, str(directory) + os.sep)
+
+    def __add__(self, font_config):
+        return font_path(font_config)
+
+
+FONTS_DIR = ThemeFontDirectory(_FONT_DIRECTORY)
 CONFIG_DATA = load_yaml(MAIN_DIRECTORY / "config.yaml")
 THEME_DEFAULT = load_yaml(MAIN_DIRECTORY / "res/themes/default.yaml")
 THEME_DATA = None
@@ -55,10 +81,10 @@ def copy_default(default, theme):
 def load_theme():
     global THEME_DATA
     try:
-        theme_path = Path("res/themes/" + CONFIG_DATA['config']['THEME'])
-        logger.info("Loading theme %s from %s" % (CONFIG_DATA['config']['THEME'], theme_path / "theme.yaml"))
+        theme_path = Path("res/themes/" + CONFIG_DATA["config"]["THEME"])
+        logger.info("Loading theme %s from %s" % (CONFIG_DATA["config"]["THEME"], theme_path / "theme.yaml"))
         THEME_DATA = load_yaml(MAIN_DIRECTORY / theme_path / "theme.yaml")
-        THEME_DATA['PATH'] = str(MAIN_DIRECTORY / theme_path) + "/"
+        THEME_DATA["PATH"] = str(MAIN_DIRECTORY / theme_path) + "/"
     except:
         logger.error("Theme not found or contains errors!")
         try:
@@ -71,9 +97,9 @@ def load_theme():
 
 def check_theme_compatible(display_size: str):
     # Check if theme is compatible with hardware revision
-    if display_size != THEME_DATA['display'].get("DISPLAY_SIZE", '3.5"'):
-        logger.error("The selected theme " + CONFIG_DATA['config'][
-            'THEME'] + " is not compatible with your display revision " + CONFIG_DATA["display"]["REVISION"])
+    if display_size != THEME_DATA["display"].get("DISPLAY_SIZE", '3.5"'):
+        logger.error("The selected theme " + CONFIG_DATA["config"][
+            "THEME"] + " is not compatible with your display revision " + CONFIG_DATA["display"]["REVISION"])
         try:
             sys.exit(0)
         except:

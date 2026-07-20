@@ -1,0 +1,114 @@
+{
+  "app": {
+    "name": "Turing 智能屏系统监控",
+    "configuration_title": "Turing 智能屏系统监控配置",
+    "theme_editor_title": "Turing 系统监控主题编辑器"
+  },
+  "common": {
+    "automatic_detection": "自动检测",
+    "none": "无",
+    "unknown": "未知",
+    "save_settings": "保存设置",
+    "save_and_run": "保存并运行",
+    "search": "搜索",
+    "exit": "退出",
+    "configure": "配置"
+  },
+  "language": {
+    "auto": "跟随系统语言",
+    "english": "英文",
+    "chinese_simplified": "简体中文",
+    "restart_hint": "语言更改将在重新打开此窗口后生效"
+  },
+  "config": {
+    "display_section": "显示屏配置",
+    "system_monitor_section": "系统监控配置",
+    "smart_screen_model": "智能屏型号",
+    "smart_screen_size": "智能屏尺寸",
+    "com_port": "串口",
+    "orientation": "显示方向",
+    "brightness": "亮度",
+    "brightness_warning": "⚠ Turing 3.5 英寸显示屏在高亮度下可能会发热！",
+    "theme": "主题",
+    "hardware_monitoring": "硬件监控方式",
+    "ethernet_interface": "有线网卡",
+    "wifi_interface": "Wi-Fi 网卡",
+    "cpu_fan": "CPU 风扇（？）",
+    "interface_language": "界面语言",
+    "restart_as_admin": "❌ 请以管理员身份重新启动，或选择其他硬件监控方式",
+    "weather_and_ping": "天气\n与 Ping",
+    "open_themes_folder": "打开主题\n文件夹",
+    "edit_theme": "编辑主题",
+    "author": "作者：{name}",
+    "fan_tooltip": "选择“无”表示未自动检测到 CPU 风扇。\n请从列表中手动选择 CPU 风扇。\n\n列表中缺少风扇？请安装 lm-sensors，运行“sudo sensors-detect”，然后重启系统。"
+  },
+  "model": {
+    "turing": "Turing 智能屏",
+    "usb_pc_monitor": "UsbPCMonitor",
+    "xuanfang": "玄方 rev. B / 旗舰版",
+    "kipye": "奇叶智能显示屏",
+    "weact": "WeAct Studio Display FS V1",
+    "simulated": "模拟显示屏"
+  },
+  "size": {
+    "new_revision": "{size}（V1.X 新硬件版本）",
+    "round_new_revision": "{size} 圆形屏（V1.X 新硬件版本）"
+  },
+  "option": {
+    "orientation_classic": "正常",
+    "orientation_reverse": "反向",
+    "hardware_auto": "自动选择",
+    "hardware_lhm": "LibreHardwareMonitor（需要管理员权限）",
+    "hardware_python": "Python 硬件库",
+    "hardware_stub": "随机模拟数据",
+    "hardware_static": "静态模拟数据",
+    "unit_metric": "公制 - °C",
+    "unit_imperial": "英制 - °F",
+    "unit_standard": "标准制 - °K",
+    "auto_detected_fan": "已自动检测：{fan}"
+  },
+  "weather": {
+    "window_title": "天气与 Ping 配置",
+    "ping_host": "要 Ping 的主机名或 IP",
+    "forecast_section": "天气预报（OpenWeatherMap API）",
+    "api_description": "要在支持天气的主题中显示预报，需要 OpenWeatherMap 的“One Call API 3.0”密钥。\n该服务每天提供 1,000 次免费调用，本程序的调用量会控制在此范围内（约 300 次/天）。",
+    "subscribe_link": "点击此处订阅 OpenWeatherMap One Call API 3.0。",
+    "api_key": "OpenWeatherMap API 密钥",
+    "coordinate_help": "可使用在线服务查询经纬度，例如 latlong.net（点击此处）",
+    "latitude": "纬度",
+    "longitude": "经度",
+    "units": "温度单位",
+    "api_language": "天气接口语言",
+    "location_search": "地点搜索",
+    "location_search_help": "输入地点名称以自动获取经纬度。\n例如：“北京”、“London, GB”或“London, Quebec”。\n请先填写有效的 API 密钥并选择接口语言。",
+    "enter_location": "输入地点",
+    "select_location": "选择地点\n（搜索后使用）",
+    "fill_coordinates": "填入经纬度",
+    "error_empty_api_city": "API 密钥和地点名称不能为空。",
+    "error_fetch": "请求 OpenWeatherMap 地理位置接口失败。",
+    "error_invalid_api_key": "OpenWeatherMap API 密钥无效。",
+    "error_http": "请求 OpenWeatherMap 地理位置接口失败，错误码：{status}。",
+    "no_city_found": "未找到匹配的地点。",
+    "select_city_hint": "请从列表中选择地点，然后点击“填入经纬度”。",
+    "no_city_selected": "尚未选择地点，或搜索没有返回结果。",
+    "coordinates_filled": "已填入 {location} 的经纬度。"
+  },
+  "theme_editor": {
+    "usage": "用法：",
+    "examples": "示例：",
+    "zoom_in": "放大 +",
+    "zoom_out": "缩小 -",
+    "coordinate_hint": "单击或拖动绘制区域以查看坐标",
+    "reload_hint": "主题文件更新后，预览将自动重新加载",
+    "drawing_zone": "正在绘制区域：[{x0:.0f},{y0:.0f}] 到 [{x1:.0f},{y1:.0f}]",
+    "zone": "区域：X={x:.0f}，Y={y:.0f}，宽={width:.0f}，高={height:.0f}",
+    "point": "X={x:.0f}，Y={y:.0f}（按住并拖动以绘制区域）"
+  },
+  "error": {
+    "import": "导入错误：{error}",
+    "import_help": "请按照项目启动指南安装所需依赖：https://github.com/mathoudebine/turing-smart-screen-python/wiki/System-monitor-:-how-to-start\n也可查看故障排除页面：https://github.com/mathoudebine/turing-smart-screen-python/wiki/Troubleshooting#all-os-tkinter-dependency-not-installed",
+    "tkinter_missing": "[错误] 未安装 Tkinter 依赖。",
+    "tkinter_help": "请按照项目故障排除说明安装 Tkinter：https://github.com/mathoudebine/turing-smart-screen-python/wiki/Troubleshooting#all-os-tkinter-dependency-not-installed",
+    "cjk_font_missing": "未找到可用的简体中文字体。请安装微软雅黑、苹方、Noto Sans CJK SC 或其他受支持的中文字体，然后重新启动程序。"
+  }
+}

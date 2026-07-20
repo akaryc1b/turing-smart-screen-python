@@ -36,6 +36,7 @@ InfoBeforeFile={#WizardDir}Disclaimer.rtf
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
+Name: "chinesesimplified"; MessagesFile: "compiler:Default.isl,languages\ChineseSimplified.isl"
 Name: "armenian"; MessagesFile: "compiler:Languages\Armenian.isl"
 Name: "brazilianportuguese"; MessagesFile: "compiler:Languages\BrazilianPortuguese.isl"
 Name: "bulgarian"; MessagesFile: "compiler:Languages\Bulgarian.isl"
@@ -61,13 +62,43 @@ Name: "spanish"; MessagesFile: "compiler:Languages\Spanish.isl"
 Name: "turkish"; MessagesFile: "compiler:Languages\Turkish.isl"
 Name: "ukrainian"; MessagesFile: "compiler:Languages\Ukrainian.isl"
 
+[CustomMessages]
+english.PawnIOPageTitle=Install PawnIO driver
+english.PawnIOPageSubtitle=Recommended for best experience
+english.PawnIOInfo1=PawnIO is an open-source scriptable universal kernel driver that allows hardware access for monitoring applications.
+english.PawnIOInfo2=LibreHardwareMonitor uses it as a replacement for the vulnerable legacy WinRing0 driver.
+english.PawnIOInfo3=Without PawnIO, some metrics such as clocks and temperatures may be limited or unavailable.
+english.PawnIOMoreInfo=More information: https://pawnio.eu/
+english.PawnIOInstall=Install / update PawnIO driver (administrator rights required)
+english.PawnIOSetupMissing=PawnIO_setup.exe was not found.
+english.PawnIORunFailed=Failed to run PawnIO_setup.exe.
+english.ErrorCode=Error code:
+english.InstallTypeDefault=Default installation
+english.ComponentProgram=Turing System Monitor software
+english.ComponentThemes=Default themes (local changes will be lost! - custom themes are preserved)
+english.ComponentConfig=Default configuration
+chinesesimplified.PawnIOPageTitle=安装 PawnIO 驱动
+chinesesimplified.PawnIOPageSubtitle=建议安装，以获得更完整的硬件监控能力
+chinesesimplified.PawnIOInfo1=PawnIO 是开源、可脚本化的通用内核驱动，可供硬件监控程序访问硬件信息。
+chinesesimplified.PawnIOInfo2=LibreHardwareMonitor 使用它替代存在安全风险的旧版 WinRing0 驱动。
+chinesesimplified.PawnIOInfo3=未安装 PawnIO 时，频率、温度等部分硬件指标可能受限或无法读取。
+chinesesimplified.PawnIOMoreInfo=更多信息：https://pawnio.eu/
+chinesesimplified.PawnIOInstall=安装或更新 PawnIO 驱动（需要管理员权限）
+chinesesimplified.PawnIOSetupMissing=未找到 PawnIO_setup.exe。
+chinesesimplified.PawnIORunFailed=无法运行 PawnIO_setup.exe。
+chinesesimplified.ErrorCode=错误代码：
+chinesesimplified.InstallTypeDefault=默认安装
+chinesesimplified.ComponentProgram=Turing System Monitor 程序
+chinesesimplified.ComponentThemes=默认主题（本地修改将丢失，但自定义主题会保留）
+chinesesimplified.ComponentConfig=默认配置
+
 [Types]
-Name: "default"; Description: "Default installation"; Flags: iscustom
+Name: "default"; Description: "{cm:InstallTypeDefault}"; Flags: iscustom
 
 [Components]
-Name: "program"; Description: "Turing System Monitor software"; Flags: fixed; Types: default
-Name: "themes"; Description: "Default themes (local changes will be lost! - custom themes are preserved)"; Types: default; Flags: disablenouninstallwarning
-Name: "config"; Description: "Default configuration"; Types: default; Flags: disablenouninstallwarning
+Name: "program"; Description: "{cm:ComponentProgram}"; Flags: fixed; Types: default
+Name: "themes"; Description: "{cm:ComponentThemes}"; Types: default; Flags: disablenouninstallwarning
+Name: "config"; Description: "{cm:ComponentConfig}"; Types: default; Flags: disablenouninstallwarning
 
 [Files]
 Source: "{#SourceDir}*"; Excludes: "config.yaml,themes"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs; Components: program
@@ -101,17 +132,17 @@ end;
 
 (* Custom page to offer to install PawnIO driver *)
 var
-	PagePawnIO: TWizardPage;
-	InstallPawnIOCheckBox: TNewCheckBox;
+  PagePawnIO: TWizardPage;
+  InstallPawnIOCheckBox: TNewCheckBox;
   InfoText: TNewStaticText;
   LinkLabel: TNewStaticText;
-  
+
 procedure CreatePagePawnIO;
 begin
   PagePawnIO := CreateCustomPage(
     wpInstalling,
-    'Install PawnIO driver',
-    'Recommended for best experience'
+    ExpandConstant('{cm:PawnIOPageTitle}'),
+    ExpandConstant('{cm:PawnIOPageSubtitle}')
   );
 
   InfoText := TNewStaticText.Create(PagePawnIO);
@@ -119,18 +150,17 @@ begin
   InfoText.Left := ScaleX(0);
   InfoText.Top := ScaleY(10);
   InfoText.Width := PagePawnIO.SurfaceWidth;
-  InfoText.Height := ScaleY(60);
+  InfoText.Height := ScaleY(75);
   InfoText.WordWrap := True;
   InfoText.Caption :=
-    'PawnIO is an open-source scriptable universal kernel driver, allowing hardware access to a wide variety of programs.' + #13#10 +
-    'It is used by LibreHardwareMonitor as a replacement to the old WinRing0 driver that was vulnerable.' + #13#10 +
-    'If you do not install it, some hardware metrics such as clocks, temperatures, etc. will be limited or unavailable.' + #13#10 +
-    'More information: https://pawnio.eu/';
+    ExpandConstant('{cm:PawnIOInfo1}') + #13#10 +
+    ExpandConstant('{cm:PawnIOInfo2}') + #13#10 +
+    ExpandConstant('{cm:PawnIOInfo3}') + #13#10 +
+    ExpandConstant('{cm:PawnIOMoreInfo}');
 
-  { Checkbox creation }
   InstallPawnIOCheckBox := TNewCheckBox.Create(PagePawnIO);
   InstallPawnIOCheckBox.Parent := PagePawnIO.Surface;
-  InstallPawnIOCheckBox.Caption := 'Install / update PawnIO driver (admin. rights needed)';
+  InstallPawnIOCheckBox.Caption := ExpandConstant('{cm:PawnIOInstall}');
   InstallPawnIOCheckBox.Left := ScaleX(0);
   InstallPawnIOCheckBox.Top := InfoText.Top + InfoText.Height + ScaleY(20);
   InstallPawnIOCheckBox.Width := PagePawnIO.SurfaceWidth;
@@ -144,14 +174,19 @@ var
 begin
   (* Do not remove !*)
   Result := True;
-    
+
   if CurPageID = PagePawnIO.ID then
   begin
     if InstallPawnIOCheckBox.Checked then
     begin
       if not FileExists(ExpandConstant('{app}\external\PawnIO\PawnIO_setup.exe')) then
       begin
-        MsgBox(ExpandConstant('{app}\external\PawnIO\PawnIO_setup.exe not found'), mbError, MB_OK);
+        MsgBox(
+          ExpandConstant('{cm:PawnIOSetupMissing}') + #13#10 +
+          ExpandConstant('{app}\external\PawnIO\PawnIO_setup.exe'),
+          mbError,
+          MB_OK
+        );
       end
       else
       begin
@@ -166,13 +201,13 @@ begin
         ) then
         begin
           MsgBox(
-            'Failed to run PawnIO_setup.exe.'#13#10 +
-            'Error code :' + IntToStr(ResultCode),
+            ExpandConstant('{cm:PawnIORunFailed}') + #13#10 +
+            ExpandConstant('{cm:ErrorCode}') + ' ' + IntToStr(ResultCode),
             mbError,
             MB_OK
           );
         end;
-        
+
         if not ShellExec(
           '',
           ExpandConstant('{app}\external\PawnIO\PawnIO_setup.exe'),
@@ -184,8 +219,8 @@ begin
         ) then
         begin
           MsgBox(
-            'Failed to run PawnIO_setup.exe.'#13#10 +
-            'Error code :' + IntToStr(ResultCode),
+            ExpandConstant('{cm:PawnIORunFailed}') + #13#10 +
+            ExpandConstant('{cm:ErrorCode}') + ' ' + IntToStr(ResultCode),
             mbError,
             MB_OK
           );
@@ -206,6 +241,6 @@ begin
     Log('First installation');
     WizardSelectComponents('program themes config');
   end;
-  
+
   CreatePagePawnIO();
 end;

@@ -1,0 +1,423 @@
+name: Release candidate dry run
+run-name: Release candidate ${{ inputs.version }} at ${{ github.sha }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Numeric release version in major.minor.patch form
+        required: true
+        default: 0.0.0
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-candidate-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  RC_VERSION: ${{ inputs.version }}
+
+jobs:
+  static-validation:
+    name: Validate release candidate policy
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Install validation dependencies
+        run: |
+          python -m pip install --disable-pip-version-check --upgrade pip
+          python -m pip install --disable-pip-version-check -r requirements.txt
+
+      - name: Validate requested version
+        run: python tools/build_release_manifest.py validate-version "$RC_VERSION"
+
+      - name: Validate release candidate sources
+        run: |
+          python -m py_compile \
+            tools/build_release_manifest.py \
+            tools/validate_release_bundle.py \
+            tests/test_release_candidate.py \
+            tests/test_release_validation.py
+          python -m unittest \
+            tests.test_release_candidate \
+            tests.test_release_validation \
+            -v
+
+  windows-release:
+    name: Windows release candidate
+    needs: static-validation
+    runs-on: windows-latest
+    timeout-minutes: 45
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --disable-pip-version-check --upgrade pip
+          python -m pip install --disable-pip-version-check -r requirements.txt
+
+      - name: Validate requested version
+        shell: pwsh
+        run: python.exe tools\build_release_manifest.py validate-version ${env:RC_VERSION}
+
+      - name: Generate release version information
+        shell: pwsh
+        run: python.exe tools\windows-installer\generate-version-info.py ${env:RC_VERSION}
+
+      - name: Build Windows release bundle
+        shell: pwsh
+        run: |
+          pyinstaller.exe --noconfirm --clean turing-system-monitor.spec
+          ${env:RC_VERSION} | Out-File ".\dist\turing-system-monitor\version.txt"
+
+      - name: Validate Windows release bundle
+        shell: pwsh
+        run: |
+          python.exe tools\validate_release_bundle.py `
+            .\dist\turing-system-monitor `
+            --platform windows
+
+      - name: Remove excluded theme examples
+        shell: pwsh
+        run: |
+          $examples = ".\dist\turing-system-monitor\res\themes\--Theme examples"
+          if (Test-Path $examples) {
+            Remove-Item -Recurse -Force $examples
+          }
+
+      - name: Prepare pinned Simplified Chinese installer translation
+        shell: pwsh
+        run: .\tools\windows-installer\prepare-inno-languages.ps1
+
+      - name: Install Inno Setup
+        shell: pwsh
+        run: choco install innosetup --no-progress -y
+
+      - name: Compile Simplified Chinese Windows installer
+        shell: pwsh
+        run: |
+          $compiler = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          if (-not (Test-Path $compiler -PathType Leaf)) {
+            throw "Inno Setup compiler was not found: $compiler"
+          }
+          & $compiler /O+ "tools\windows-installer\turing-system-monitor.iss"
+          if ($LASTEXITCODE -ne 0) {
+            exit $LASTEXITCODE
+          }
+
+      - name: Create Windows portable ZIP
+        shell: pwsh
+        run: |
+          $archive = "turing-system-monitor-${env:RC_VERSION}-portable-windows.zip"
+          Push-Location .\dist
+          7z a -tzip "..\$archive" ".\turing-system-monitor"
+          $exitCode = $LASTEXITCODE
+          Pop-Location
+          if ($exitCode -ne 0) {
+            exit $exitCode
+          }
+
+      - name: Create Windows release metadata
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force ".\rc-metadata" | Out-Null
+          $pythonVersion = (python.exe --version).Split()[1]
+          $installer = ".\tools\windows-installer\Output\turing-system-monitor-${env:RC_VERSION}-windows.exe"
+          $archive = ".\turing-system-monitor-${env:RC_VERSION}-portable-windows.zip"
+          python.exe tools\build_release_manifest.py entry `
+            --artifact $installer `
+            --kind windows-release-installer `
+            --version ${env:RC_VERSION} `
+            --commit $env:GITHUB_SHA `
+            --python-version $pythonVersion `
+            --catalog-dir ".\dist\turing-system-monitor\locales" `
+            --theme ".\dist\turing-system-monitor\res\themes\3.5inchTheme2-zh-CN\theme.yaml" `
+            --output ".\rc-metadata\metadata-windows-release-installer.json"
+          python.exe tools\build_release_manifest.py entry `
+            --artifact $archive `
+            --kind windows-release-portable `
+            --version ${env:RC_VERSION} `
+            --commit $env:GITHUB_SHA `
+            --python-version $pythonVersion `
+            --catalog-dir ".\dist\turing-system-monitor\locales" `
+            --theme ".\dist\turing-system-monitor\res\themes\3.5inchTheme2-zh-CN\theme.yaml" `
+            --output ".\rc-metadata\metadata-windows-release-portable.json"
+
+      - name: Archive Windows release candidate inputs
+        uses: actions/upload-artifact@v7
+        with:
+          name: rc-windows-release-${{ inputs.version }}
+          path: |
+            tools/windows-installer/Output/turing-system-monitor-${{ inputs.version }}-windows.exe
+            turing-system-monitor-${{ inputs.version }}-portable-windows.zip
+            rc-metadata/*.json
+          if-no-files-found: error
+          retention-days: 14
+
+  windows-debug:
+    name: Windows debug candidate
+    needs: static-validation
+    runs-on: windows-latest
+    timeout-minutes: 45
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --disable-pip-version-check --upgrade pip
+          python -m pip install --disable-pip-version-check -r requirements.txt
+
+      - name: Validate requested version
+        shell: pwsh
+        run: python.exe tools\build_release_manifest.py validate-version ${env:RC_VERSION}
+
+      - name: Generate debug version information
+        shell: pwsh
+        run: |
+          python.exe tools\windows-installer\generate-version-info.py `
+            ${env:RC_VERSION} debug
+
+      - name: Build Windows debug bundle
+        shell: pwsh
+        run: |
+          pyinstaller.exe --noconfirm --clean turing-system-monitor-debug.spec
+          "${env:RC_VERSION}-debug" | Out-File ".\dist\turing-system-monitor\version.txt"
+
+      - name: Validate Windows debug bundle
+        shell: pwsh
+        run: |
+          python.exe tools\validate_release_bundle.py `
+            .\dist\turing-system-monitor `
+            --platform windows
+
+      - name: Remove excluded theme examples
+        shell: pwsh
+        run: |
+          $examples = ".\dist\turing-system-monitor\res\themes\--Theme examples"
+          if (Test-Path $examples) {
+            Remove-Item -Recurse -Force $examples
+          }
+
+      - name: Prepare pinned Simplified Chinese installer translation
+        shell: pwsh
+        run: .\tools\windows-installer\prepare-inno-languages.ps1
+
+      - name: Install Inno Setup
+        shell: pwsh
+        run: choco install innosetup --no-progress -y
+
+      - name: Compile Simplified Chinese Windows debug installer
+        shell: pwsh
+        run: |
+          $compiler = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          if (-not (Test-Path $compiler -PathType Leaf)) {
+            throw "Inno Setup compiler was not found: $compiler"
+          }
+          & $compiler /O+ "tools\windows-installer\turing-system-monitor.iss"
+          if ($LASTEXITCODE -ne 0) {
+            exit $LASTEXITCODE
+          }
+
+      - name: Create Windows debug portable ZIP
+        shell: pwsh
+        run: |
+          $archive = "turing-system-monitor-${env:RC_VERSION}-debug-portable-windows.zip"
+          Push-Location .\dist
+          7z a -tzip "..\$archive" ".\turing-system-monitor"
+          $exitCode = $LASTEXITCODE
+          Pop-Location
+          if ($exitCode -ne 0) {
+            exit $exitCode
+          }
+
+      - name: Create Windows debug metadata
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force ".\rc-metadata" | Out-Null
+          $pythonVersion = (python.exe --version).Split()[1]
+          $installer = ".\tools\windows-installer\Output\turing-system-monitor-${env:RC_VERSION}-debug-windows.exe"
+          $archive = ".\turing-system-monitor-${env:RC_VERSION}-debug-portable-windows.zip"
+          python.exe tools\build_release_manifest.py entry `
+            --artifact $installer `
+            --kind windows-debug-installer `
+            --version ${env:RC_VERSION} `
+            --commit $env:GITHUB_SHA `
+            --python-version $pythonVersion `
+            --catalog-dir ".\dist\turing-system-monitor\locales" `
+            --theme ".\dist\turing-system-monitor\res\themes\3.5inchTheme2-zh-CN\theme.yaml" `
+            --output ".\rc-metadata\metadata-windows-debug-installer.json"
+          python.exe tools\build_release_manifest.py entry `
+            --artifact $archive `
+            --kind windows-debug-portable `
+            --version ${env:RC_VERSION} `
+            --commit $env:GITHUB_SHA `
+            --python-version $pythonVersion `
+            --catalog-dir ".\dist\turing-system-monitor\locales" `
+            --theme ".\dist\turing-system-monitor\res\themes\3.5inchTheme2-zh-CN\theme.yaml" `
+            --output ".\rc-metadata\metadata-windows-debug-portable.json"
+
+      - name: Archive Windows debug candidate inputs
+        uses: actions/upload-artifact@v7
+        with:
+          name: rc-windows-debug-${{ inputs.version }}
+          path: |
+            tools/windows-installer/Output/turing-system-monitor-${{ inputs.version }}-debug-windows.exe
+            turing-system-monitor-${{ inputs.version }}-debug-portable-windows.zip
+            rc-metadata/*.json
+          if-no-files-found: error
+          retention-days: 14
+
+  linux-release:
+    name: Linux release candidate
+    needs: static-validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.14'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --disable-pip-version-check --upgrade pip
+          python -m pip install --disable-pip-version-check -r requirements.txt
+
+      - name: Validate requested version
+        run: python tools/build_release_manifest.py validate-version "$RC_VERSION"
+
+      - name: Build Linux release bundle
+        run: |
+          pyinstaller --noconfirm --clean turing-system-monitor.spec
+          printf '%s\n' "$RC_VERSION" > ./dist/turing-system-monitor/version.txt
+          ln -s configure ./dist/turing-system-monitor/turing-smart-screen
+
+      - name: Validate Linux release bundle
+        run: |
+          python tools/validate_release_bundle.py \
+            ./dist/turing-system-monitor \
+            --platform linux
+
+      - name: Remove excluded theme examples
+        run: rm -rf "./dist/turing-system-monitor/res/themes/--Theme examples"
+
+      - name: Create Linux TAR.GZ
+        run: |
+          tar -czf "turing-system-monitor-$RC_VERSION-linux.tar.gz" \
+            -C ./dist turing-system-monitor
+
+      - name: Create Linux release metadata
+        run: |
+          mkdir -p ./rc-metadata
+          python_version="$(python --version | awk '{print $2}')"
+          python tools/build_release_manifest.py entry \
+            --artifact "./turing-system-monitor-$RC_VERSION-linux.tar.gz" \
+            --kind linux-release-archive \
+            --version "$RC_VERSION" \
+            --commit "$GITHUB_SHA" \
+            --python-version "$python_version" \
+            --catalog-dir ./dist/turing-system-monitor/locales \
+            --theme ./dist/turing-system-monitor/res/themes/3.5inchTheme2-zh-CN/theme.yaml \
+            --output ./rc-metadata/metadata-linux-release-archive.json
+
+      - name: Archive Linux release candidate inputs
+        uses: actions/upload-artifact@v7
+        with:
+          name: rc-linux-release-${{ inputs.version }}
+          path: |
+            turing-system-monitor-${{ inputs.version }}-linux.tar.gz
+            rc-metadata/*.json
+          if-no-files-found: error
+          retention-days: 14
+
+  release-catalog:
+    name: Build release candidate catalog
+    needs:
+      - windows-release
+      - windows-debug
+      - linux-release
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Install manifest dependency
+        run: python -m pip install --disable-pip-version-check PyYAML
+
+      - name: Download Windows release candidate inputs
+        uses: actions/download-artifact@v5
+        with:
+          name: rc-windows-release-${{ inputs.version }}
+          path: rc-input/windows-release
+
+      - name: Download Windows debug candidate inputs
+        uses: actions/download-artifact@v5
+        with:
+          name: rc-windows-debug-${{ inputs.version }}
+          path: rc-input/windows-debug
+
+      - name: Download Linux release candidate inputs
+        uses: actions/download-artifact@v5
+        with:
+          name: rc-linux-release-${{ inputs.version }}
+          path: rc-input/linux-release
+
+      - name: Build and verify release-manifest.json
+        run: |
+          mapfile -t metadata < <(find rc-input -type f -name 'metadata-*.json' -print | sort)
+          test "${#metadata[@]}" -eq 5
+          python tools/build_release_manifest.py combine \
+            --artifacts-root rc-input \
+            --output release-manifest.json \
+            "${metadata[@]}"
+
+      - name: Stage final release candidate artifact set
+        run: |
+          mkdir -p release-candidate
+          find rc-input -type f \( \
+            -name '*.exe' -o \
+            -name '*.zip' -o \
+            -name '*.tar.gz' \
+          \) -exec cp '{}' release-candidate/ \;
+          cp release-manifest.json release-candidate/release-manifest.json
+          test "$(find release-candidate -maxdepth 1 -type f | wc -l)" -eq 6
+
+      - name: Archive complete release candidate
+        uses: actions/upload-artifact@v7
+        with:
+          name: turing-system-monitor-${{ inputs.version }}-release-candidate
+          path: release-candidate/
+          if-no-files-found: error
+          retention-days: 14

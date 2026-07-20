@@ -1,0 +1,73 @@
+name: Localization coverage
+
+on:
+  pull_request:
+    paths:
+      - 'configure.py'
+      - 'theme-editor.py'
+      - 'main.py'
+      - 'library/**'
+      - 'locales/**'
+      - 'tools/localization_coverage.py'
+      - 'tools/localization-allowlist.json'
+      - 'tools/windows-installer/**'
+      - 'tests/test_localization_coverage.py'
+      - 'docs/zh-CN/localization-coverage.md'
+      - '.github/workflows/localization-coverage.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: localization-coverage-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  audit:
+    name: Audit Simplified Chinese coverage
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Validate audit syntax
+        run: |
+          python -m py_compile \
+            tools/localization_coverage.py \
+            tests/test_localization_coverage.py
+
+      - name: Run audit unit tests
+        run: python -m unittest tests.test_localization_coverage -v
+
+      - name: Generate localization coverage reports
+        run: |
+          python tools/localization_coverage.py \
+            --format json \
+            --output localization-coverage.json
+          python tools/localization_coverage.py \
+            --format markdown \
+            --output localization-coverage.md
+
+      - name: Upload localization coverage reports
+        uses: actions/upload-artifact@v7
+        with:
+          name: localization-coverage
+          path: |
+            localization-coverage.json
+            localization-coverage.md
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Enforce localization coverage errors
+        run: |
+          python tools/localization_coverage.py \
+            --format json \
+            --output localization-coverage.json \
+            --fail-on-errors

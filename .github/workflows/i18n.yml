@@ -1,0 +1,237 @@
+name: Localization
+
+on:
+  pull_request:
+    paths:
+      - 'main.py'
+      - 'configure.py'
+      - 'theme-editor.py'
+      - 'library/config.py'
+      - 'library/fonts.py'
+      - 'library/i18n.py'
+      - 'library/resources.py'
+      - 'locales/**'
+      - 'res/themes/3.5inchTheme2-zh-CN/**'
+      - 'README.zh-CN.md'
+      - 'docs/zh-CN/**'
+      - 'tools/localization_coverage.py'
+      - 'tools/localization-allowlist.json'
+      - 'tests/test_localization_coverage.py'
+      - '.github/workflows/localization-coverage.yml'
+      - 'tests/test_repository_hygiene.py'
+      - 'tools/upstream_sync_report.py'
+      - 'tests/test_i18n.py'
+      - 'tests/test_i18n_usage.py'
+      - 'tests/test_packaged_resources.py'
+      - 'tests/test_font_discovery.py'
+      - 'tests/test_chinese_theme.py'
+      - 'tests/test_upstream_sync_report.py'
+      - 'tests/test_localization_maintenance.py'
+      - 'tests/test_dependency_review_policy.py'
+      - 'turing-system-monitor.spec'
+      - 'turing-system-monitor-debug.spec'
+      - '.github/workflows/i18n.yml'
+      - '.github/workflows/dependency-review.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'main.py'
+      - 'configure.py'
+      - 'theme-editor.py'
+      - 'library/config.py'
+      - 'library/fonts.py'
+      - 'library/i18n.py'
+      - 'library/resources.py'
+      - 'locales/**'
+      - 'res/themes/3.5inchTheme2-zh-CN/**'
+      - 'README.zh-CN.md'
+      - 'docs/zh-CN/**'
+      - 'tools/localization_coverage.py'
+      - 'tools/localization-allowlist.json'
+      - 'tests/test_localization_coverage.py'
+      - '.github/workflows/localization-coverage.yml'
+      - 'tests/test_repository_hygiene.py'
+      - 'tools/upstream_sync_report.py'
+      - 'tests/test_i18n.py'
+      - 'tests/test_i18n_usage.py'
+      - 'tests/test_packaged_resources.py'
+      - 'tests/test_font_discovery.py'
+      - 'tests/test_chinese_theme.py'
+      - 'tests/test_upstream_sync_report.py'
+      - 'tests/test_localization_maintenance.py'
+      - 'tests/test_dependency_review_policy.py'
+      - 'turing-system-monitor.spec'
+      - 'turing-system-monitor-debug.spec'
+      - '.github/workflows/i18n.yml'
+      - '.github/workflows/dependency-review.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: localization-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Install test dependencies
+        run: |
+          python -m pip install --disable-pip-version-check --upgrade pip
+          python -m pip install --disable-pip-version-check -r requirements.txt
+
+      - name: Validate Python syntax
+        run: |
+          python -m py_compile \
+            main.py \
+            configure.py \
+            theme-editor.py \
+            library/config.py \
+            library/fonts.py \
+            library/i18n.py \
+            library/resources.py \
+            tools/upstream_sync_report.py \
+            tests/test_i18n.py \
+            tests/test_i18n_usage.py \
+            tests/test_packaged_resources.py \
+            tests/test_font_discovery.py \
+            tests/test_chinese_theme.py \
+            tests/test_upstream_sync_report.py \
+            tests/test_localization_maintenance.py \
+            tests/test_repository_hygiene.py \
+            tests/test_dependency_review_policy.py
+
+      - name: Run localization unit tests
+        run: python -m unittest tests.test_i18n -v
+
+      - name: Check catalog key equality
+        run: >-
+          python -m unittest
+          tests.test_i18n_usage.CatalogQualityTests.test_catalogs_have_exactly_the_same_keys -v
+
+      - name: Check catalog placeholder equality
+        run: >-
+          python -m unittest
+          tests.test_i18n_usage.CatalogQualityTests.test_named_placeholders_match_for_every_key -v
+
+      - name: Check catalog UTF-8 JSON
+        run: >-
+          python -m unittest
+          tests.test_i18n_usage.CatalogQualityTests.test_catalog_files_are_valid_utf8_json -v
+
+      - name: Check tr() keys are string literals
+        run: >-
+          python -m unittest
+          tests.test_i18n_usage.CatalogQualityTests.test_translation_keys_are_string_literals -v
+
+      - name: Check all tr() keys exist
+        run: >-
+          python -m unittest
+          tests.test_i18n_usage.CatalogQualityTests.test_all_literal_translation_keys_exist -v
+
+      - name: Check catalog entries are used
+        run: >-
+          python -m unittest
+          tests.test_i18n_usage.CatalogQualityTests.test_catalog_entries_are_used -v
+
+      - name: Check core Python for hardcoded Chinese
+        run: >-
+          python -m unittest
+          tests.test_i18n_usage.HardcodedChineseTests.test_core_python_does_not_embed_user_visible_chinese -v
+
+      - name: Check stable configurator values
+        run: >-
+          python -m unittest
+          tests.test_i18n_usage.StableConfigurationValueTests.test_configurator_maps_keep_stable_internal_keys -v
+
+      - name: Check default protocol values
+        run: >-
+          python -m unittest
+          tests.test_i18n_usage.StableConfigurationValueTests.test_default_config_keeps_protocol_values -v
+
+      - name: Check packaged localization resources
+        run: python -m unittest tests.test_packaged_resources -v
+
+      - name: Check CJK font discovery
+        run: python -m unittest tests.test_font_discovery -v
+
+      - name: Check Chinese theme target and independence
+        run: >-
+          python -m unittest
+          tests.test_chinese_theme.ChineseThemeTests.test_theme_is_independent_and_targets_35_inch_portrait -v
+
+      - name: Check Chinese theme background PNG
+        run: >-
+          python -m unittest
+          tests.test_chinese_theme.ChineseThemeTests.test_background_is_valid_320_by_480_png -v
+
+      - name: Check Chinese theme preview PNG
+        run: >-
+          python -m unittest
+          tests.test_chinese_theme.ChineseThemeTests.test_preview_is_valid_320_by_480_png -v
+
+      - name: Check Chinese theme image references
+        run: >-
+          python -m unittest
+          tests.test_chinese_theme.ChineseThemeTests.test_static_image_files_exist -v
+
+      - name: Check Chinese theme layout bounds
+        run: >-
+          python -m unittest
+          tests.test_chinese_theme.ChineseThemeTests.test_all_explicit_rectangles_stay_inside_display -v
+
+      - name: Check Chinese theme font aliases
+        run: >-
+          python -m unittest
+          tests.test_chinese_theme.ChineseThemeTests.test_chinese_static_labels_use_system_cjk_aliases -v
+
+      - name: Check required Chinese theme labels
+        run: >-
+          python -m unittest
+          tests.test_chinese_theme.ChineseThemeTests.test_required_chinese_labels_are_present -v
+
+      - name: Check stable metric abbreviations
+        run: >-
+          python -m unittest
+          tests.test_chinese_theme.ChineseThemeTests.test_common_metric_abbreviations_remain_stable -v
+
+      - name: Check Chinese theme has no font binaries
+        run: >-
+          python -m unittest
+          tests.test_chinese_theme.ChineseThemeTests.test_theme_does_not_vendor_font_binaries -v
+
+      - name: Run localization maintenance tests
+        run: >-
+          python -m unittest
+          tests.test_upstream_sync_report
+          tests.test_localization_maintenance
+          tests.test_repository_hygiene
+          tests.test_dependency_review_policy -v
+
+      - name: Run complete test discovery
+        run: python -m unittest discover -s tests -t . -v
+
+      - name: Validate translation catalogs
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          for catalog in sorted(Path('locales').glob('*.json')):
+              with catalog.open(encoding='utf-8') as stream:
+                  data = json.load(stream)
+              if not isinstance(data, dict):
+                  raise SystemExit(f'{catalog} must contain a JSON object')
+              print(f'Validated {catalog}')
+          PY

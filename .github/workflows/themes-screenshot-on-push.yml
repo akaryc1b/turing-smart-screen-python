@@ -6,6 +6,10 @@ on:
       - main
       - 'releases/**'
 
+concurrency:
+  group: themes-screenshot-push-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   system-monitor-theme-screenshot:
     name: Update themes screenshot and generate list
@@ -14,6 +18,7 @@ jobs:
     if: github.repository == 'mathoudebine/turing-smart-screen-python'
     
     runs-on: ubuntu-latest
+    timeout-minutes: 45
 
     permissions:
       # Give the default GITHUB_TOKEN write permission to commit and push the

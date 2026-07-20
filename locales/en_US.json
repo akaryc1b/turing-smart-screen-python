@@ -1,0 +1,114 @@
+{
+  "app": {
+    "name": "Turing System Monitor",
+    "configuration_title": "Turing System Monitor configuration",
+    "theme_editor_title": "Turing SysMon Theme Editor"
+  },
+  "common": {
+    "automatic_detection": "Automatic detection",
+    "none": "None",
+    "unknown": "unknown",
+    "save_settings": "Save settings",
+    "save_and_run": "Save and run",
+    "search": "Search",
+    "exit": "Exit",
+    "configure": "Configure"
+  },
+  "language": {
+    "auto": "Follow system language",
+    "english": "English",
+    "chinese_simplified": "Simplified Chinese",
+    "restart_hint": "Language changes apply after restarting this window"
+  },
+  "config": {
+    "display_section": "Display configuration",
+    "system_monitor_section": "System Monitor Configuration",
+    "smart_screen_model": "Smart screen model",
+    "smart_screen_size": "Smart screen size",
+    "com_port": "COM port",
+    "orientation": "Orientation",
+    "brightness": "Brightness",
+    "brightness_warning": "⚠ Turing 3.5\" displays can get hot at high brightness!",
+    "theme": "Theme",
+    "hardware_monitoring": "Hardware monitoring",
+    "ethernet_interface": "Ethernet interface",
+    "wifi_interface": "Wi-Fi interface",
+    "cpu_fan": "CPU fan (?)",
+    "interface_language": "Interface language",
+    "restart_as_admin": "❌ Restart as administrator or select another hardware monitoring method",
+    "weather_and_ping": "Weather\n& Ping",
+    "open_themes_folder": "Open themes\nfolder",
+    "edit_theme": "Edit theme",
+    "author": "Author: {name}",
+    "fan_tooltip": "If 'None' is selected, the CPU fan was not auto-detected.\nManually select your CPU fan from the list.\n\nFans missing from the list? Install the lm-sensors package, run 'sudo sensors-detect', then reboot."
+  },
+  "model": {
+    "turing": "Turing Smart Screen",
+    "usb_pc_monitor": "UsbPCMonitor",
+    "xuanfang": "XuanFang rev. B & flagship",
+    "kipye": "Kipye Qiye Smart Display",
+    "weact": "WeAct Studio Display FS V1",
+    "simulated": "Simulated screen"
+  },
+  "size": {
+    "new_revision": "{size} (V1.X new hardware revision)",
+    "round_new_revision": "{size} round (V1.X new hardware revision)"
+  },
+  "option": {
+    "orientation_classic": "classic",
+    "orientation_reverse": "reverse",
+    "hardware_auto": "Automatic",
+    "hardware_lhm": "LibreHardwareMonitor (administrator)",
+    "hardware_python": "Python libraries",
+    "hardware_stub": "Fake random data",
+    "hardware_static": "Fake static data",
+    "unit_metric": "metric - °C",
+    "unit_imperial": "imperial - °F",
+    "unit_standard": "standard - °K",
+    "auto_detected_fan": "Auto-detected: {fan}"
+  },
+  "weather": {
+    "window_title": "Configure weather & ping",
+    "ping_host": "Hostname / IP to ping",
+    "forecast_section": "Weather forecast (OpenWeatherMap API)",
+    "api_description": "To display a weather forecast on compatible themes, you need an OpenWeatherMap 'One Call API 3.0' key.\nYou receive 1,000 free API calls per day. This program stays below that threshold (about 300 calls/day).",
+    "subscribe_link": "Click here to subscribe to OpenWeatherMap One Call API 3.0.",
+    "api_key": "OpenWeatherMap API key",
+    "coordinate_help": "You can use an online service to find your latitude and longitude, for example latlong.net (click here)",
+    "latitude": "Latitude",
+    "longitude": "Longitude",
+    "units": "Units",
+    "api_language": "Weather API language",
+    "location_search": "Location search",
+    "location_search_help": "Enter a location to automatically retrieve coordinates (latitude/longitude).\nFor example: 'Berlin', 'London, GB', or 'London, Quebec'.\nSet a valid API key and choose an API language first.",
+    "enter_location": "Enter location",
+    "select_location": "Select location\n(use after Search)",
+    "fill_coordinates": "Fill in latitude/longitude",
+    "error_empty_api_city": "API key and city name cannot be empty.",
+    "error_fetch": "Error fetching OpenWeatherMap Geo API.",
+    "error_invalid_api_key": "Invalid OpenWeatherMap API key.",
+    "error_http": "Error #{status} fetching OpenWeatherMap Geo API.",
+    "no_city_found": "No matching city was found.",
+    "select_city_hint": "Select your city from the list, then apply 'Fill in latitude/longitude'.",
+    "no_city_selected": "No city is selected or the search returned no results.",
+    "coordinates_filled": "Latitude/longitude filled for {location}."
+  },
+  "theme_editor": {
+    "usage": "Usage:",
+    "examples": "Examples:",
+    "zoom_in": "Zoom +",
+    "zoom_out": "Zoom -",
+    "coordinate_hint": "Click or draw a zone to show coordinates",
+    "reload_hint": "This preview reloads when the theme file is updated",
+    "drawing_zone": "Drawing zone from [{x0:.0f},{y0:.0f}] to [{x1:.0f},{y1:.0f}]",
+    "zone": "Zone: X={x:.0f}, Y={y:.0f}, width={width:.0f}, height={height:.0f}",
+    "point": "X={x:.0f}, Y={y:.0f} (click and drag to draw a zone)"
+  },
+  "error": {
+    "import": "Import error: {error}",
+    "import_help": "Please follow the start guide to install required packages: https://github.com/mathoudebine/turing-smart-screen-python/wiki/System-monitor-:-how-to-start\nOr see the troubleshooting page: https://github.com/mathoudebine/turing-smart-screen-python/wiki/Troubleshooting#all-os-tkinter-dependency-not-installed",
+    "tkinter_missing": "[ERROR] Tkinter dependency is not installed.",
+    "tkinter_help": "Please install Tkinter using the project's troubleshooting instructions: https://github.com/mathoudebine/turing-smart-screen-python/wiki/Troubleshooting#all-os-tkinter-dependency-not-installed",
+    "cjk_font_missing": "No compatible Simplified Chinese font was found. Install Microsoft YaHei, PingFang SC, Noto Sans CJK SC, or another supported CJK font, then restart the application."
+  }
+}

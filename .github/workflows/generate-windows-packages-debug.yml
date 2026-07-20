@@ -7,10 +7,15 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: generate-windows-debug-packages-${{ github.event.release.tag_name || github.ref }}
+  cancel-in-progress: false
+
 jobs:
   generate-windows-installer:
     name: Generate Windows Packages (Debug)
     runs-on: windows-latest
+    timeout-minutes: 45
 
     steps:
     - name: Git Checkout ${{github.event.release.tag_name}}
@@ -34,6 +39,14 @@ jobs:
       run: |
         pyinstaller.exe --noconfirm turing-system-monitor-debug.spec
         "${{github.event.release.tag_name}}-debug" | Out-File ".\dist\turing-system-monitor\version.txt"
+
+    - name: Validate generated debug bundle
+      run: |
+        python.exe tools/validate_release_bundle.py .\dist\turing-system-monitor --platform windows
+
+    - name: Prepare pinned Simplified Chinese installer translation
+      shell: pwsh
+      run: .\tools\windows-installer\prepare-inno-languages.ps1
 
     - name: Create InnoSetup installer from generated binaries
       uses: Minionguyjpro/Inno-Setup-Action@v1.2.8

@@ -32,6 +32,8 @@ check_python_version()
 import os
 import sys
 
+from library.i18n import set_language, tr
+
 try:
     import atexit
     import locale
@@ -52,10 +54,8 @@ try:
     from library.display import display
 
 except Exception as e:
-    print("""Import error: %s
-Please follow start guide to install required packages: https://github.com/mathoudebine/turing-smart-screen-python/wiki/System-monitor-:-how-to-start
-Or the troubleshooting page: https://github.com/mathoudebine/turing-smart-screen-python/wiki/Troubleshooting#all-os-tkinter-dependency-not-installed""" % str(
-        e))
+    print(tr("error.import", error=str(e)))
+    print(tr("error.import_help"))
     try:
         sys.exit(0)
     except:
@@ -66,6 +66,10 @@ try:
 except:
     # If pystray cannot be loaded do not stop the program, just ignore it. The tray icon will not be displayed.
     pass
+
+from library import config as app_config
+
+set_language(app_config.CONFIG_DATA.get("config", {}).get("LANGUAGE", "auto"))
 
 MAIN_DIRECTORY = Path(__file__).resolve().parent
 
@@ -171,16 +175,16 @@ if __name__ == "__main__":
     # Create a tray icon for the program, with an Exit entry in menu
     try:
         tray_icon = pystray.Icon(
-            name='Turing System Monitor',
-            title='Turing System Monitor',
+            name=tr("app.name"),
+            title=tr("app.name"),
             icon=Image.open(MAIN_DIRECTORY / "res/icons/monitor-icon-17865/64.png"),
             menu=pystray.Menu(
                 pystray.MenuItem(
-                    text='Configure',
+                    text=tr("common.configure"),
                     action=on_configure_tray),
                 pystray.Menu.SEPARATOR,
                 pystray.MenuItem(
-                    text='Exit',
+                    text=tr("common.exit"),
                     action=on_exit_tray)
             )
         )

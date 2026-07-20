@@ -7,10 +7,18 @@ on:
       - 'releases/**'
   pull_request:
 
+permissions:
+  contents: read
+
+concurrency:
+  group: simple-program-windows-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   simple-program:
     name: Simple program (Windows)
     runs-on: windows-latest
+    timeout-minutes: 20
 
     strategy:
       fail-fast: false
@@ -29,21 +37,39 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install -r requirements.txt
 
-    - name: Run simple-program.py during 20 seconds
+    - name: Configure simulated display
+      shell: pwsh
       run: |
-        # For tests there is no real HW: use simulated LCD mode
-        (Get-Content simple-program.py) -replace "^REVISION.*$","REVISION=`"SIMU`"" | Set-Content  simple-program.py
-        
-        # Run the program for 20s
-        Start-Process -NoNewWindow python3 simple-program.py -RedirectStandardOutput output.log -RedirectStandardError error.log
-        sleep 20
-        add-content output.log (get-content error.log)
+        (Get-Content simple-program.py) -replace '^REVISION.*$', 'REVISION="SIMU"' | Set-Content -Encoding utf8 simple-program.py
+
+    - name: Run simple-program.py during 20 seconds
+      shell: pwsh
+      run: |
+        $ErrorActionPreference = 'Stop'
+        $python = (Get-Command python).Source
+        $process = Start-Process -FilePath $python -ArgumentList @('simple-program.py') -WorkingDirectory $PWD.Path -NoNewWindow -PassThru -RedirectStandardOutput output.log -RedirectStandardError error.log
+        try
+        {
+            Start-Sleep -Seconds 20
+        }
+        finally
+        {
+            if (-not $process.HasExited)
+            {
+                $process.Kill($true)
+            }
+            $process.WaitForExit()
+        }
+        if (Test-Path error.log)
+        {
+            Get-Content -Raw error.log | Add-Content output.log
+        }
 
     - name: Check output for errors
       run: |
         echo "######## Output : ########"
         cat output.log
-        
+
         $SEL = Select-String -Path output.log -Pattern "error"
         if ($SEL -ne $null)
         {

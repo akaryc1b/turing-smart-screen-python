@@ -3,10 +3,18 @@ name: System monitor - themes screenshot (on PR)
 on:
   pull_request:
 
+permissions:
+  contents: read
+
+concurrency:
+  group: themes-screenshot-pr-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   system-monitor-theme-screenshot:
     name: Generate screenshot for all themes
     runs-on: ubuntu-latest
+    timeout-minutes: 45
 
     steps:
     - uses: actions/checkout@v6
@@ -17,6 +25,8 @@ jobs:
 
     - name: Install dependencies
       run: |
+        sudo apt-get update
+        sudo apt-get install --yes fonts-noto-cjk
         python -m pip install --upgrade pip
         python -m pip install -r requirements.txt
 
@@ -29,25 +39,25 @@ jobs:
       run: |
         for dir in res/themes/*/
         do
-          if test -f "$dir/theme.yaml"; then        
+          if test -f "$dir/theme.yaml"; then
             # Keep only folder name
             theme=`basename "${dir%*/}"`
-          
+
             # Setup selected theme in config.yaml
             echo "Using theme $theme"
             sed -i '/THEME:/c\  THEME: "'"$theme"'"' config.yaml
-    
+
             # For tests there is no real HW: use simulated LCD mode
             sed -i "/REVISION:/c\  REVISION: SIMU" config.yaml
-        
+
             # Run system-monitor for 10 seconds
             python3 main.py > output.log 2>&1 &
             sleep 10
             killall -9 python3
-          
+
             # Rename screen capture
             cp screencap.png "screenshot-$theme.png"
-        
+
             # Compare with original theme preview to detect changes, generate a diff
             if [ -f "$dir/preview.png" ]; then
               python3 tools/compare-images.py "screenshot-$theme.png" "$dir/preview.png" "diff-$theme.png"
@@ -57,6 +67,25 @@ jobs:
             fi
           fi
         done
+
+    - name: Validate Simplified Chinese theme screenshot
+      run: |
+        python - <<'PY'
+        from pathlib import Path
+        from PIL import Image
+
+        screenshot = Path("screenshot-3.5inchTheme2-zh-CN.png")
+        if not screenshot.is_file() or screenshot.stat().st_size <= 1000:
+            raise SystemExit("Simplified Chinese theme screenshot was not generated")
+
+        with Image.open(screenshot) as image:
+            if image.format != "PNG" or image.size != (320, 480):
+                raise SystemExit(
+                    f"Unexpected Simplified Chinese screenshot: {image.format} {image.size}"
+                )
+            image.verify()
+        print("Validated Simplified Chinese theme screenshot")
+        PY
 
     - name: Archive screenshots
       uses: actions/upload-artifact@v7
