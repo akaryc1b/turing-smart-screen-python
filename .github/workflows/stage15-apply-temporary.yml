@@ -20,11 +20,20 @@ jobs:
     timeout-minutes: 15
     steps:
       - name: Check out maintenance branch
-        uses: actions/checkout@v6
-        with:
-          ref: ${{ github.head_ref }}
-          fetch-depth: 1
-          show-progress: false
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPOSITORY: ${{ github.repository }}
+          HEAD_BRANCH: ${{ github.head_ref }}
+        run: |
+          auth_header=$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 | tr -d '\n')
+          git init . >/dev/null
+          git config http.https://github.com/.extraheader "AUTHORIZATION: basic $auth_header"
+          git remote add origin "https://github.com/$GH_REPOSITORY.git"
+          git fetch --no-tags --depth=1 origin \
+            "refs/heads/$HEAD_BRANCH:refs/remotes/origin/$HEAD_BRANCH" \
+            >/dev/null 2>&1
+          git checkout --force -B "$HEAD_BRANCH" \
+            "refs/remotes/origin/$HEAD_BRANCH" >/dev/null 2>&1
 
       - name: Reconstruct and apply maintenance payload
         run: |
