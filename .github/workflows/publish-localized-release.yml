@@ -39,6 +39,10 @@ jobs:
         with:
           python-version: '3.11'
 
+      - name: Install publisher dependencies
+        run: |
+          python -m pip install --disable-pip-version-check "PyYAML~=6.0.3"
+
       - name: Validate release request and candidate run
         id: validate
         shell: bash
