@@ -1,14 +1,8 @@
 name: Release candidate dry run
-run-name: Release candidate ${{ inputs.version }} at ${{ github.sha }}
+run-name: Release candidate synchronized with upstream at ${{ github.sha }}
 
 on:
   workflow_dispatch:
-    inputs:
-      version:
-        description: Numeric release version in major.minor.patch form
-        required: true
-        default: 0.0.0
-        type: string
 
 permissions:
   contents: read
@@ -18,7 +12,9 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  RC_VERSION: ${{ inputs.version }}
+  # This fork only adds localization; keep the release version aligned with
+  # tools/upstream-release.json and the upstream release contained in main.
+  RC_VERSION: 3.10.0
 
 jobs:
   static-validation:
@@ -28,6 +24,8 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v6
@@ -39,8 +37,37 @@ jobs:
           python -m pip install --disable-pip-version-check --upgrade pip
           python -m pip install --disable-pip-version-check -r requirements.txt
 
-      - name: Validate requested version
-        run: python tools/build_release_manifest.py validate-version "$RC_VERSION"
+      - name: Validate synchronized upstream release
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          import re
+          from pathlib import Path
+
+          metadata = json.loads(
+              Path("tools/upstream-release.json").read_text(encoding="utf-8")
+          )
+          version = str(metadata.get("version", "")).strip()
+          tag = str(metadata.get("tag", "")).strip()
+          commit = str(metadata.get("commit", "")).strip().lower()
+          repository = str(metadata.get("repository", "")).strip()
+          if version != os.environ["RC_VERSION"]:
+              raise SystemExit(
+                  f"RC_VERSION {os.environ['RC_VERSION']!r} does not match "
+                  f"upstream metadata version {version!r}"
+              )
+          if tag != version:
+              raise SystemExit(f"Upstream tag {tag!r} must match version {version!r}")
+          if repository != "mathoudebine/turing-smart-screen-python":
+              raise SystemExit(f"Unexpected upstream repository: {repository!r}")
+          if not re.fullmatch(r"[0-9a-f]{40}", commit):
+              raise SystemExit(f"Invalid upstream release commit: {commit!r}")
+          print(f"Validated upstream release {version} at {commit}")
+          PY
+          upstream_commit="$(python -c 'import json; print(json.load(open("tools/upstream-release.json", encoding="utf-8"))["commit"])')"
+          git merge-base --is-ancestor "$upstream_commit" HEAD
+          python tools/build_release_manifest.py validate-version "$RC_VERSION"
 
       - name: Validate release candidate sources
         run: |
@@ -48,9 +75,11 @@ jobs:
             tools/build_release_manifest.py \
             tools/validate_release_bundle.py \
             tests/test_release_candidate.py \
+            tests/test_release_candidate_sync.py \
             tests/test_release_validation.py
           python -m unittest \
             tests.test_release_candidate \
+            tests.test_release_candidate_sync \
             tests.test_release_validation \
             -v
 
@@ -60,6 +89,10 @@ jobs:
     runs-on: windows-latest
     timeout-minutes: 45
     steps:
+      - name: Disable Windows line-ending conversion
+        shell: pwsh
+        run: git config --global core.autocrlf false
+
       - name: Check out repository
         uses: actions/checkout@v6
 
@@ -73,7 +106,7 @@ jobs:
           python -m pip install --disable-pip-version-check --upgrade pip
           python -m pip install --disable-pip-version-check -r requirements.txt
 
-      - name: Validate requested version
+      - name: Validate synchronized version
         shell: pwsh
         run: python.exe tools\build_release_manifest.py validate-version ${env:RC_VERSION}
 
@@ -163,10 +196,10 @@ jobs:
       - name: Archive Windows release candidate inputs
         uses: actions/upload-artifact@v7
         with:
-          name: rc-windows-release-${{ inputs.version }}
+          name: rc-windows-release-${{ env.RC_VERSION }}
           path: |
-            tools/windows-installer/Output/turing-system-monitor-${{ inputs.version }}-windows.exe
-            turing-system-monitor-${{ inputs.version }}-portable-windows.zip
+            tools/windows-installer/Output/turing-system-monitor-${{ env.RC_VERSION }}-windows.exe
+            turing-system-monitor-${{ env.RC_VERSION }}-portable-windows.zip
             rc-metadata/*.json
           if-no-files-found: error
           retention-days: 14
@@ -177,6 +210,10 @@ jobs:
     runs-on: windows-latest
     timeout-minutes: 45
     steps:
+      - name: Disable Windows line-ending conversion
+        shell: pwsh
+        run: git config --global core.autocrlf false
+
       - name: Check out repository
         uses: actions/checkout@v6
 
@@ -190,7 +227,7 @@ jobs:
           python -m pip install --disable-pip-version-check --upgrade pip
           python -m pip install --disable-pip-version-check -r requirements.txt
 
-      - name: Validate requested version
+      - name: Validate synchronized version
         shell: pwsh
         run: python.exe tools\build_release_manifest.py validate-version ${env:RC_VERSION}
 
@@ -282,10 +319,10 @@ jobs:
       - name: Archive Windows debug candidate inputs
         uses: actions/upload-artifact@v7
         with:
-          name: rc-windows-debug-${{ inputs.version }}
+          name: rc-windows-debug-${{ env.RC_VERSION }}
           path: |
-            tools/windows-installer/Output/turing-system-monitor-${{ inputs.version }}-debug-windows.exe
-            turing-system-monitor-${{ inputs.version }}-debug-portable-windows.zip
+            tools/windows-installer/Output/turing-system-monitor-${{ env.RC_VERSION }}-debug-windows.exe
+            turing-system-monitor-${{ env.RC_VERSION }}-debug-portable-windows.zip
             rc-metadata/*.json
           if-no-files-found: error
           retention-days: 14
@@ -309,7 +346,7 @@ jobs:
           python -m pip install --disable-pip-version-check --upgrade pip
           python -m pip install --disable-pip-version-check -r requirements.txt
 
-      - name: Validate requested version
+      - name: Validate synchronized version
         run: python tools/build_release_manifest.py validate-version "$RC_VERSION"
 
       - name: Build Linux release bundle
@@ -349,9 +386,9 @@ jobs:
       - name: Archive Linux release candidate inputs
         uses: actions/upload-artifact@v7
         with:
-          name: rc-linux-release-${{ inputs.version }}
+          name: rc-linux-release-${{ env.RC_VERSION }}
           path: |
-            turing-system-monitor-${{ inputs.version }}-linux.tar.gz
+            turing-system-monitor-${{ env.RC_VERSION }}-linux.tar.gz
             rc-metadata/*.json
           if-no-files-found: error
           retention-days: 14
@@ -379,19 +416,19 @@ jobs:
       - name: Download Windows release candidate inputs
         uses: actions/download-artifact@v5
         with:
-          name: rc-windows-release-${{ inputs.version }}
+          name: rc-windows-release-${{ env.RC_VERSION }}
           path: rc-input/windows-release
 
       - name: Download Windows debug candidate inputs
         uses: actions/download-artifact@v5
         with:
-          name: rc-windows-debug-${{ inputs.version }}
+          name: rc-windows-debug-${{ env.RC_VERSION }}
           path: rc-input/windows-debug
 
       - name: Download Linux release candidate inputs
         uses: actions/download-artifact@v5
         with:
-          name: rc-linux-release-${{ inputs.version }}
+          name: rc-linux-release-${{ env.RC_VERSION }}
           path: rc-input/linux-release
 
       - name: Build and verify release-manifest.json
@@ -417,7 +454,7 @@ jobs:
       - name: Archive complete release candidate
         uses: actions/upload-artifact@v7
         with:
-          name: turing-system-monitor-${{ inputs.version }}-release-candidate
+          name: turing-system-monitor-${{ env.RC_VERSION }}-release-candidate
           path: release-candidate/
           if-no-files-found: error
           retention-days: 14
