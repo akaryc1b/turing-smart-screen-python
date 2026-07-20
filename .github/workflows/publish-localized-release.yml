@@ -82,7 +82,10 @@ jobs:
           run_branch="$(jq -r '.head_branch' <<<"$run_json")"
           run_sha="$(jq -r '.head_sha' <<<"$run_json")"
           run_repository="$(jq -r '.head_repository.full_name' <<<"$run_json")"
-          run_path="$(jq -r '.path' <<<"$run_json")"
+          run_path="$(jq -r '.path // ""' <<<"$run_json")"
+          # GitHub's Actions API may suffix the workflow path with the ref that
+          # supplied the workflow definition, for example "@main".
+          run_workflow_path="${run_path%%@*}"
 
           expected_name="Release candidate dry run"
           expected_event="workflow_dispatch"
@@ -114,7 +117,7 @@ jobs:
             echo "Release candidate belongs to another repository: $run_repository" >&2
             exit 1
           }
-          [[ "$run_path" == "$expected_path" ]] || {
+          [[ "$run_workflow_path" == "$expected_path" ]] || {
             echo "Unexpected release candidate workflow path: $run_path" >&2
             exit 1
           }
