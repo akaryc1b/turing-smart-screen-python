@@ -131,7 +131,7 @@ class LocalizedReleaseWorkflowPolicyTests(unittest.TestCase):
                 self.assertIn(marker, self.source)
 
     def test_workflow_normalizes_api_path_ref_suffix(self):
-        self.assertIn("run_path=\"$(jq -r '.path // \\\"\\\"'", self.source)
+        self.assertIn("run_path=\"$(jq -r '.path // \"\"'", self.source)
         self.assertIn('run_workflow_path="${run_path%%@*}"', self.source)
         self.assertIn(
             '[[ "$run_workflow_path" == "$expected_path" ]]',
