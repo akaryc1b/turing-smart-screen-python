@@ -22,6 +22,14 @@ def untrack_temporary_validation_files():
     )
 
 
+def show_hygiene_test_source():
+    lines = Path("tests/test_repository_hygiene.py").read_text(
+        encoding="utf-8"
+    ).splitlines()
+    for number in range(70, min(121, len(lines) + 1)):
+        print(f"{number}: {lines[number - 1]}")
+
+
 def run_command(test_names, success_tail):
     env = os.environ.copy()
     env["PYTHONPATH"] = str(Path(".stage15").resolve())
@@ -41,6 +49,7 @@ def run_command(test_names, success_tail):
 
 
 def run_tests():
+    show_hygiene_test_source()
     run_command([TARGET_HYGIENE_TEST], success_tail=3)
     run_command(
         [
