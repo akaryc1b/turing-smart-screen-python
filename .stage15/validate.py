@@ -1,5 +1,6 @@
 from pathlib import Path
 import os
+import shutil
 import subprocess
 import sys
 
@@ -94,9 +95,7 @@ def validate_workflows():
 
 
 def cleanup():
-    for path in map(Path, TEMPORARY_VALIDATION_FILES):
-        path.unlink()
-    Path(".stage15").rmdir()
+    shutil.rmtree(".stage15")
 
 
 if __name__ == "__main__":
