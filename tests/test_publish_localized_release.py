@@ -124,11 +124,20 @@ class LocalizedReleaseWorkflowPolicyTests(unittest.TestCase):
             "run-id: ${{ inputs.run_id }}",
             "python tools/validate_release_set.py",
             "gh release create",
-            "--target \"$RC_SHA\"",
+            '--target "$RC_SHA"',
             "--latest",
         ):
             with self.subTest(marker=marker):
                 self.assertIn(marker, self.source)
+
+    def test_workflow_normalizes_api_path_ref_suffix(self):
+        self.assertIn("run_path=\"$(jq -r '.path // \\\"\\\"'", self.source)
+        self.assertIn('run_workflow_path="${run_path%%@*}"', self.source)
+        self.assertIn(
+            '[[ "$run_workflow_path" == "$expected_path" ]]',
+            self.source,
+        )
+        self.assertNotIn('[[ "$run_path" == "$expected_path" ]]', self.source)
 
     def test_workflow_does_not_rebuild_or_publish_upstream_tag(self):
         for forbidden in (
