@@ -60,17 +60,25 @@ jobs:
                       and indent == 4
                       and stripped.startswith('timeout-minutes:')
                   ):
-                      jobs[current_job]['timeout-minutes'] = stripped.split(
-                          ':', 1
-                      )[1].strip()
+                      value = stripped.split(':', 1)[1].strip()
+                      jobs[current_job]['timeout-minutes'] = (
+                          int(value) if value.isdigit() else value
+                      )
               return {'jobs': jobs}
           PY
           python3 -m py_compile tests/test_repository_hygiene.py
+          set +e
           PYTHONPATH=/tmp/stage15-yaml-shim python3 -m unittest \
             tests.test_repository_hygiene \
             tests.test_localization_maintenance \
             tests.test_dependency_review_policy \
-            -v
+            -v > /tmp/stage15-tests.log 2>&1
+          test_status=$?
+          set -e
+          tail -n 120 /tmp/stage15-tests.log
+          if [ "$test_status" -ne 0 ]; then
+            exit "$test_status"
+          fi
           python3 - <<'PY'
           from pathlib import Path
 
