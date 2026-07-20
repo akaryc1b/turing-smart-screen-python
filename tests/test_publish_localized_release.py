@@ -175,7 +175,7 @@ class LocalizedReleaseWorkflowPolicyTests(unittest.TestCase):
             "pyinstaller",
             "choco install",
             "ISCC.exe",
-            'refs/tags/3.10.0"',
+            "refs/tags/3.10.0\"",
         ):
             with self.subTest(forbidden=forbidden):
                 self.assertNotIn(forbidden, self.source)
