@@ -46,6 +46,7 @@ WRITE_PERMISSION_ALLOWLIST = {
     "generate-linux-packages.yml": {"contents"},
     "generate-windows-packages.yml": {"contents"},
     "generate-windows-packages-debug.yml": {"contents"},
+    "publish-localized-release.yml": {"contents"},
     "themes-screenshot-on-push.yml": {"contents"},
 }
 

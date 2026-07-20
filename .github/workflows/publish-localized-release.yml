@@ -1,0 +1,219 @@
+name: Publish localized release
+run-name: Publish localized release from RC run ${{ inputs.run_id }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: Successful Release candidate dry run ID from main
+        required: true
+        default: '29722992811'
+        type: string
+      localization_revision:
+        description: Positive localized release revision appended after zh-cn
+        required: true
+        default: '1'
+        type: string
+
+permissions:
+  actions: read
+  contents: write
+
+concurrency:
+  group: publish-localized-release
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Validate and publish localized release
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Validate release request and candidate run
+        id: validate
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_ID: ${{ inputs.run_id }}
+          LOCALIZATION_REVISION: ${{ inputs.localization_revision }}
+        run: |
+          set -euo pipefail
+
+          if [[ "$GITHUB_REF_NAME" != "main" ]]; then
+            echo "Localized releases must be published from main, got: $GITHUB_REF_NAME" >&2
+            exit 1
+          fi
+          if [[ ! "$RUN_ID" =~ ^[0-9]+$ ]]; then
+            echo "Release candidate run ID must be numeric, got: $RUN_ID" >&2
+            exit 1
+          fi
+          if [[ ! "$LOCALIZATION_REVISION" =~ ^[1-9][0-9]*$ ]]; then
+            echo "Localization revision must be a positive integer, got: $LOCALIZATION_REVISION" >&2
+            exit 1
+          fi
+
+          VERSION="$(python - <<'PY'
+          import json
+          from pathlib import Path
+
+          metadata = json.loads(
+              Path("tools/upstream-release.json").read_text(encoding="utf-8")
+          )
+          print(str(metadata["version"]).strip())
+          PY
+          )"
+          python tools/build_release_manifest.py validate-version "$VERSION"
+
+          run_json="$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$RUN_ID")"
+          run_name="$(jq -r '.name' <<<"$run_json")"
+          run_event="$(jq -r '.event' <<<"$run_json")"
+          run_status="$(jq -r '.status' <<<"$run_json")"
+          run_conclusion="$(jq -r '.conclusion' <<<"$run_json")"
+          run_branch="$(jq -r '.head_branch' <<<"$run_json")"
+          run_sha="$(jq -r '.head_sha' <<<"$run_json")"
+          run_repository="$(jq -r '.head_repository.full_name' <<<"$run_json")"
+          run_path="$(jq -r '.path' <<<"$run_json")"
+
+          expected_name="Release candidate dry run"
+          expected_event="workflow_dispatch"
+          expected_conclusion="success"
+          expected_branch="main"
+          expected_path=".github/workflows/release-candidate.yml"
+
+          [[ "$run_name" == "$expected_name" ]] || {
+            echo "Unexpected workflow name: $run_name" >&2
+            exit 1
+          }
+          [[ "$run_event" == "$expected_event" ]] || {
+            echo "Unexpected workflow event: $run_event" >&2
+            exit 1
+          }
+          [[ "$run_status" == "completed" ]] || {
+            echo "Release candidate run is not completed: $run_status" >&2
+            exit 1
+          }
+          [[ "$run_conclusion" == "$expected_conclusion" ]] || {
+            echo "Release candidate run did not succeed: $run_conclusion" >&2
+            exit 1
+          }
+          [[ "$run_branch" == "$expected_branch" ]] || {
+            echo "Release candidate was not built from main: $run_branch" >&2
+            exit 1
+          }
+          [[ "$run_repository" == "$GITHUB_REPOSITORY" ]] || {
+            echo "Release candidate belongs to another repository: $run_repository" >&2
+            exit 1
+          }
+          [[ "$run_path" == "$expected_path" ]] || {
+            echo "Unexpected release candidate workflow path: $run_path" >&2
+            exit 1
+          }
+          [[ "$run_sha" =~ ^[0-9a-f]{40}$ ]] || {
+            echo "Release candidate head SHA is invalid: $run_sha" >&2
+            exit 1
+          }
+
+          git fetch origin main --tags --force
+          git merge-base --is-ancestor "$run_sha" origin/main || {
+            echo "Release candidate commit is not contained in current main: $run_sha" >&2
+            exit 1
+          }
+
+          artifact_name="turing-system-monitor-${VERSION}-release-candidate"
+          artifact_count="$(
+            gh api "repos/$GITHUB_REPOSITORY/actions/runs/$RUN_ID/artifacts?per_page=100" \
+              --jq ".artifacts | map(select(.name == \"$artifact_name\" and .expired == false)) | length"
+          )"
+          [[ "$artifact_count" == "1" ]] || {
+            echo "Expected one unexpired candidate artifact named $artifact_name, found $artifact_count" >&2
+            exit 1
+          }
+
+          TAG="${VERSION}-zh-cn.${LOCALIZATION_REVISION}"
+          if git ls-remote --exit-code --tags origin "refs/tags/$TAG" >/dev/null 2>&1; then
+            echo "Release tag already exists: $TAG" >&2
+            exit 1
+          fi
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "GitHub Release already exists: $TAG" >&2
+            exit 1
+          fi
+
+          {
+            echo "version=$VERSION"
+            echo "tag=$TAG"
+            echo "rc_sha=$run_sha"
+            echo "artifact_name=$artifact_name"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Download validated release candidate
+        uses: actions/download-artifact@v5
+        with:
+          name: ${{ steps.validate.outputs.artifact_name }}
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          run-id: ${{ inputs.run_id }}
+          path: release-candidate
+
+      - name: Verify complete release candidate set
+        run: |
+          python tools/validate_release_set.py release-candidate \
+            --version "${{ steps.validate.outputs.version }}" \
+            --commit "${{ steps.validate.outputs.rc_sha }}"
+
+      - name: Generate localized release notes
+        env:
+          VERSION: ${{ steps.validate.outputs.version }}
+          TAG: ${{ steps.validate.outputs.tag }}
+          RC_SHA: ${{ steps.validate.outputs.rc_sha }}
+          RUN_ID: ${{ inputs.run_id }}
+        run: |
+          cat > release-notes.md <<EOF
+          ## 简体中文本地化发行版
+
+          这是上游 **turing-smart-screen-python ${VERSION}** 的简体中文本地化发行版。
+
+          - 默认界面语言为 `auto`：中文系统首次启动自动显示简体中文，其他系统按系统语言选择；用户可在配置界面切换语言。
+          - 保留上游硬件协议、USB/串口通信、传感器逻辑和稳定配置值。
+          - 包含 Windows 正式版、Windows Debug、Windows portable ZIP、Linux TAR.GZ 和可审计的 `release-manifest.json`。
+          - 本项目是非官方开源本地化版本，与硬件厂商无隶属或授权关系。
+
+          **上游版本：** ${VERSION}  
+          **本地化标签：** ${TAG}  
+          **候选源码提交：** ${RC_SHA}  
+          **已验证 RC run：** ${RUN_ID}
+          EOF
+
+      - name: Publish GitHub Release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.validate.outputs.tag }}
+          VERSION: ${{ steps.validate.outputs.version }}
+          RC_SHA: ${{ steps.validate.outputs.rc_sha }}
+        run: |
+          set -euo pipefail
+          assets=(
+            "release-candidate/turing-system-monitor-${VERSION}-windows.exe"
+            "release-candidate/turing-system-monitor-${VERSION}-portable-windows.zip"
+            "release-candidate/turing-system-monitor-${VERSION}-debug-windows.exe"
+            "release-candidate/turing-system-monitor-${VERSION}-debug-portable-windows.zip"
+            "release-candidate/turing-system-monitor-${VERSION}-linux.tar.gz"
+            "release-candidate/release-manifest.json"
+          )
+          gh release create "$TAG" "${assets[@]}" \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$RC_SHA" \
+            --title "Turing System Monitor ${VERSION} 简体中文本地化版" \
+            --notes-file release-notes.md \
+            --latest

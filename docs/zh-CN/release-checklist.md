@@ -70,7 +70,8 @@ python tools/upstream_sync_report.py \
 python -m py_compile \
   main.py configure.py theme-editor.py \
   library/config.py library/fonts.py library/i18n.py library/resources.py \
-  tools/validate_release_bundle.py tools/upstream_sync_report.py
+  tools/validate_release_bundle.py tools/validate_release_set.py \
+  tools/upstream_sync_report.py
 
 python -m unittest tests.test_i18n -v
 python -m unittest tests.test_i18n_usage -v
@@ -78,6 +79,7 @@ python -m unittest tests.test_packaged_resources -v
 python -m unittest tests.test_font_discovery -v
 python -m unittest tests.test_chinese_theme -v
 python -m unittest tests.test_release_validation -v
+python -m unittest tests.test_publish_localized_release -v
 python -m unittest tests.test_upstream_sync_report -v
 python -m unittest tests.test_localization_maintenance -v
 python -m unittest discover -s tests -t . -v
@@ -126,7 +128,50 @@ flake8
 
 Dependency Review 或 CodeQL 未触发、失败或权限不足时，应在发布记录中准确说明。不要删除或弱化安全工作流。
 
-## 9. 发布产物检查
+## 9. 候选版本演练
+
+先在默认分支手动运行 `Release candidate dry run`。该工作流只有读取权限，不创建 tag 或 GitHub Release。
+
+- [ ] 工作流从 `main` 运行。
+- [ ] `tools/upstream-release.json` 中的版本、tag 和上游提交正确。
+- [ ] Windows 正式版、Windows Debug 和 Linux job 全部成功。
+- [ ] 最终 `Build release candidate catalog` 成功。
+- [ ] 最终 artifact 名为 `turing-system-monitor-<version>-release-candidate`。
+- [ ] 已记录成功的 RC run ID 和 RC Head SHA。
+- [ ] `release-manifest.json` 中的五个 artifact SHA-256 与实际文件一致。
+
+不要把单个平台的中间 artifact 当作正式发布集合。正式发布必须使用最终候选集合。
+
+## 10. 正式发布
+
+合并正式发布 workflow 后，从 `main` 手动运行 `Publish localized release`：
+
+1. 输入已成功的 RC run ID。
+2. 首次本地化发布使用 revision `1`。
+3. 工作流验证 RC 的名称、事件、结论、分支、仓库、workflow 路径和 Head SHA。
+4. 工作流从指定 RC run 下载最终候选集合，并重新验证文件名、大小、SHA-256、版本和提交。
+5. 验证通过后创建本地化 tag 和 GitHub Release。
+
+标签格式：
+
+```text
+<上游版本>-zh-cn.<本地化修订号>
+```
+
+例如：
+
+```text
+3.10.0-zh-cn.1
+```
+
+- [ ] 不直接创建或覆盖上游同名 `3.10.0` tag。
+- [ ] tag 指向实际生成候选包的 RC Head SHA，而不是发布 workflow 自身的提交。
+- [ ] 发布 workflow 不重新运行 PyInstaller、Inno Setup 或修改候选文件。
+- [ ] 只有 `publish-localized-release.yml` 获得发布所需的 `contents: write`。
+- [ ] 发布包含五个二进制/压缩包和 `release-manifest.json`，共六个 assets。
+- [ ] 发布说明包含非官方本地化声明、上游版本、RC run 和源码提交。
+
+## 11. 发布产物检查
 
 - [ ] Windows 安装器可以启动并选择简体中文。
 - [ ] Windows portable 包完整解压后可以运行配置向导。
@@ -136,11 +181,11 @@ Dependency Review 或 CodeQL 未触发、失败或权限不足时，应在发布
 - [ ] 发布包和源码归档保留许可证、作者与上游链接。
 - [ ] 发布说明列出已知限制和未通过的检查。
 
-## 10. 发布后
+## 12. 发布后
 
 - [ ] 从发布页重新下载每个产物并校验文件可读。
 - [ ] 使用 `TURING_LANGUAGE=zh_CN` 完成一次配置向导启动。
 - [ ] 使用 `SIMU` 和 `STATIC` 完成一次无硬件烟雾测试。
 - [ ] 确认中文主题生成 `screencap.png` 且没有缺字方框。
-- [ ] 记录发布提交 SHA、Actions run 和产物名称。
+- [ ] 记录发布 tag、发布提交 SHA、RC Actions run 和产物名称。
 - [ ] 新发现的问题进入后续 Draft PR，不直接重写已发布 tag。
