@@ -116,7 +116,9 @@ jobs:
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -A
           git commit -m 'chore: enforce final localization maintenance safeguards'
-          git fetch --no-tags --depth=1 origin agent/zh-cn-coverage-audit
+          git fetch --no-tags --depth=1 origin \
+            'refs/heads/agent/zh-cn-coverage-audit:refs/remotes/origin/agent/zh-cn-coverage-audit' \
+            >/dev/null 2>&1
           python3 - <<'PY'
           import subprocess
 
