@@ -3,7 +3,7 @@ name: Temporary stage 15 maintenance apply
 on:
   pull_request:
     paths:
-      - '.stage15/final.part-*'
+      - '.stage15/**'
       - '.github/workflows/stage15-apply-temporary.yml'
 
 permissions:
