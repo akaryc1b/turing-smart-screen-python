@@ -4,6 +4,20 @@ import subprocess
 import sys
 
 
+TEMPORARY_VALIDATION_FILES = (
+    ".stage15/yaml.py",
+    ".stage15/validate.py",
+)
+
+
+def untrack_temporary_validation_files():
+    subprocess.run(
+        ["git", "rm", "--cached", "-f", *TEMPORARY_VALIDATION_FILES],
+        check=True,
+        stdout=subprocess.DEVNULL,
+    )
+
+
 def run_tests():
     env = os.environ.copy()
     env["PYTHONPATH"] = str(Path(".stage15").resolve())
@@ -24,9 +38,10 @@ def run_tests():
         env=env,
     )
     output = (result.stdout + result.stderr).splitlines()
-    print("\n".join(output[-60:]))
     if result.returncode:
+        print("\n".join(output[-80:]))
         raise SystemExit(result.returncode)
+    print("\n".join(output[-5:]))
 
 
 def validate_workflows():
@@ -40,7 +55,7 @@ def validate_workflows():
 
 
 def cleanup():
-    for path in (Path(".stage15/yaml.py"), Path(".stage15/validate.py")):
+    for path in map(Path, TEMPORARY_VALIDATION_FILES):
         path.unlink()
     Path(".stage15").rmdir()
 
@@ -50,6 +65,7 @@ if __name__ == "__main__":
         [sys.executable, "-m", "py_compile", "tests/test_repository_hygiene.py"],
         check=True,
     )
+    untrack_temporary_validation_files()
     run_tests()
     validate_workflows()
     cleanup()
