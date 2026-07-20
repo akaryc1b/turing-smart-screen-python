@@ -112,6 +112,23 @@ class LocalizedReleaseWorkflowPolicyTests(unittest.TestCase):
         self.assertIn("contents: write", self.source)
         self.assertNotIn("actions: write", self.source)
 
+    def test_workflow_installs_manifest_dependency_before_validation(self):
+        dependency_install = (
+            'python -m pip install --disable-pip-version-check "PyYAML~=6.0.3"'
+        )
+        manifest_validation = (
+            'python tools/build_release_manifest.py validate-version "$VERSION"'
+        )
+        self.assertIn(dependency_install, self.source)
+        self.assertLess(
+            self.source.index(dependency_install),
+            self.source.index(manifest_validation),
+        )
+        self.assertNotIn(
+            "python -m pip install --disable-pip-version-check -r requirements.txt",
+            self.source,
+        )
+
     def test_workflow_publishes_only_a_successful_main_rc_run(self):
         for marker in (
             'expected_name="Release candidate dry run"',
