@@ -75,7 +75,6 @@ jobs:
           python tools/build_release_manifest.py validate-version "$VERSION"
 
           run_json="$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$RUN_ID")"
-          run_name="$(jq -r '.name' <<<"$run_json")"
           run_event="$(jq -r '.event' <<<"$run_json")"
           run_status="$(jq -r '.status' <<<"$run_json")"
           run_conclusion="$(jq -r '.conclusion' <<<"$run_json")"
@@ -83,6 +82,7 @@ jobs:
           run_sha="$(jq -r '.head_sha' <<<"$run_json")"
           run_repository="$(jq -r '.head_repository.full_name' <<<"$run_json")"
           run_path="$(jq -r '.path // ""' <<<"$run_json")"
+          run_workflow_id="$(jq -r '.workflow_id' <<<"$run_json")"
           # GitHub's Actions API may suffix the workflow path with the ref that
           # supplied the workflow definition, for example "@main".
           run_workflow_path="${run_path%%@*}"
@@ -92,9 +92,30 @@ jobs:
           expected_conclusion="success"
           expected_branch="main"
           expected_path=".github/workflows/release-candidate.yml"
+          expected_state="active"
 
-          [[ "$run_name" == "$expected_name" ]] || {
-            echo "Unexpected workflow name: $run_name" >&2
+          workflow_json="$(
+            gh api "repos/$GITHUB_REPOSITORY/actions/workflows/release-candidate.yml"
+          )"
+          expected_workflow_id="$(jq -r '.id' <<<"$workflow_json")"
+          expected_workflow_name="$(jq -r '.name' <<<"$workflow_json")"
+          expected_workflow_path="$(jq -r '.path' <<<"$workflow_json")"
+          expected_workflow_state="$(jq -r '.state' <<<"$workflow_json")"
+
+          [[ "$expected_workflow_name" == "$expected_name" ]] || {
+            echo "Unexpected approved workflow name: $expected_workflow_name" >&2
+            exit 1
+          }
+          [[ "$expected_workflow_path" == "$expected_path" ]] || {
+            echo "Unexpected approved workflow path: $expected_workflow_path" >&2
+            exit 1
+          }
+          [[ "$expected_workflow_state" == "$expected_state" ]] || {
+            echo "Approved release candidate workflow is not active: $expected_workflow_state" >&2
+            exit 1
+          }
+          [[ "$run_workflow_id" == "$expected_workflow_id" ]] || {
+            echo "Release candidate run belongs to workflow ID $run_workflow_id, expected $expected_workflow_id" >&2
             exit 1
           }
           [[ "$run_event" == "$expected_event" ]] || {

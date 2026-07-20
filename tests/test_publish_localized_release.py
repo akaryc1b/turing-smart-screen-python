@@ -130,6 +130,20 @@ class LocalizedReleaseWorkflowPolicyTests(unittest.TestCase):
             with self.subTest(marker=marker):
                 self.assertIn(marker, self.source)
 
+    def test_workflow_uses_workflow_identity_not_dynamic_run_name(self):
+        for marker in (
+            'run_workflow_id="$(jq -r \'.workflow_id\'',
+            "actions/workflows/release-candidate.yml",
+            'expected_workflow_id="$(jq -r \'.id\'',
+            'expected_workflow_name="$(jq -r \'.name\'',
+            '[[ "$run_workflow_id" == "$expected_workflow_id" ]]',
+            '[[ "$expected_workflow_name" == "$expected_name" ]]',
+        ):
+            with self.subTest(marker=marker):
+                self.assertIn(marker, self.source)
+        self.assertNotIn('run_name="$(jq -r \'.name\'', self.source)
+        self.assertNotIn('[[ "$run_name" == "$expected_name" ]]', self.source)
+
     def test_workflow_normalizes_api_path_ref_suffix(self):
         self.assertIn("run_path=\"$(jq -r '.path // \"\"'", self.source)
         self.assertIn('run_workflow_path="${run_path%%@*}"', self.source)
