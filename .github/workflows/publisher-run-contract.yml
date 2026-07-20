@@ -1,0 +1,60 @@
+name: Publisher run contract inspection
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/publisher-run-contract.yml'
+
+permissions:
+  actions: read
+  contents: read
+
+concurrency:
+  group: publisher-run-contract-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  inspect:
+    name: Inspect validated RC run metadata
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Inspect RC run API contract
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_ID: '29722992811'
+        shell: bash
+        run: |
+          set -euo pipefail
+          run_json="$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$RUN_ID")"
+          jq -c '{
+            name,
+            display_title,
+            event,
+            status,
+            conclusion,
+            head_branch,
+            head_sha,
+            head_repository_full_name: .head_repository.full_name,
+            repository_full_name: .repository.full_name,
+            path,
+            workflow_id,
+            run_number,
+            run_attempt
+          }' <<<"$run_json"
+
+          gh api "repos/$GITHUB_REPOSITORY/actions/runs/$RUN_ID/artifacts?per_page=100" \
+            --jq '[.artifacts[] | {name, expired, size_in_bytes}]'
+
+          git fetch origin main --tags --force
+          run_sha="$(jq -r '.head_sha' <<<"$run_json")"
+          if git merge-base --is-ancestor "$run_sha" origin/main; then
+            echo "ancestor_check=true"
+          else
+            echo "ancestor_check=false"
+          fi
