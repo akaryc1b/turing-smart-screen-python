@@ -1,8 +1,8 @@
 {
   "app": {
-    "name": "Turing 智能屏系统监控",
-    "configuration_title": "Turing 智能屏系统监控配置",
-    "theme_editor_title": "Turing 系统监控主题编辑器"
+    "name": "DMC",
+    "configuration_title": "DMC",
+    "theme_editor_title": "DMC"
   },
   "common": {
     "automatic_detection": "自动检测",
@@ -39,7 +39,7 @@
     "weather_and_ping": "天气\n与 Ping",
     "open_themes_folder": "打开主题\n文件夹",
     "edit_theme": "编辑主题",
-    "author": "作者：{name}",
+    "author": "作者：{name}\nakary汉化",
     "fan_tooltip": "选择“无”表示未自动检测到 CPU 风扇。\n请从列表中手动选择 CPU 风扇。\n\n列表中缺少风扇？请安装 lm-sensors，运行“sudo sensors-detect”，然后重启系统。"
   },
   "model": {

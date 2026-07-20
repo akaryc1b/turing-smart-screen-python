@@ -43,6 +43,10 @@ THEME_EDITOR_UI_KEYS: Mapping[str, str] = {
     "coordinate_hint": "theme_editor.coordinate_hint",
     "reload_hint": "theme_editor.reload_hint",
 }
+LANGUAGE_INDEPENDENT_UI_VALUES: Mapping[str, str] = {
+    "app.configuration_title": "DMC",
+    "app.theme_editor_title": "DMC",
+}
 
 SOURCE_CONTRACTS: Mapping[str, Mapping[str, str]] = {
     "configure.py": CONFIGURATION_UI_KEYS,
@@ -79,7 +83,15 @@ def _translated_contract(
         value = translator(key)
         if value == key:
             raise FrozenSmokeError(f"Missing Simplified Chinese translation key: {key}")
-        if not _contains_cjk(value):
+
+        expected_value = LANGUAGE_INDEPENDENT_UI_VALUES.get(key)
+        if expected_value is not None:
+            if value != expected_value:
+                raise FrozenSmokeError(
+                    "Language-independent UI value mismatch: "
+                    f"{key}={value!r}, expected {expected_value!r}"
+                )
+        elif not _contains_cjk(value):
             raise FrozenSmokeError(
                 f"Simplified Chinese UI value does not contain CJK text: {key}"
             )

@@ -16,11 +16,13 @@ from typing import Any, Mapping, Optional, Sequence
 from PIL import Image
 
 EXPECTED_SIZE = (320, 480)
+EXACT_FIELDS = (
+    ("configuration_ui", "title", "DMC"),
+    ("theme_editor_ui", "title", "DMC"),
+)
 CJK_FIELDS = (
-    ("configuration_ui", "title"),
     ("configuration_ui", "display_section"),
     ("configuration_ui", "hardware"),
-    ("theme_editor_ui", "title"),
     ("theme_editor_ui", "coordinate_hint"),
 )
 
@@ -82,6 +84,13 @@ def validate_report(report: Mapping[str, Any], screenshot: Path) -> None:
         raise FrozenSmokeRunnerError("Smoke report font mode is invalid")
     if font.get("mode") == "fallback" and not font.get("notice"):
         raise FrozenSmokeRunnerError("Fallback font mode did not emit a notice")
+
+    for section, field, expected in EXACT_FIELDS:
+        value = str(report.get(section, {}).get(field, ""))
+        if value != expected:
+            raise FrozenSmokeRunnerError(
+                f"Smoke report field {section}.{field} is not {expected!r}"
+            )
 
     for section, field in CJK_FIELDS:
         value = str(report.get(section, {}).get(field, ""))
