@@ -37,22 +37,32 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install -r requirements.txt
 
-    - name: Run simple-program.py during 20 seconds
+    - name: Configure simulated display
+      shell: pwsh
       run: |
-        # For tests there is no real HW: use simulated LCD mode
-        (Get-Content simple-program.py) -replace "^REVISION.*$","REVISION=`\"SIMU`\"" | Set-Content simple-program.py
+        (Get-Content simple-program.py) -replace '^REVISION.*$', 'REVISION="SIMU"' | Set-Content -Encoding utf8 simple-program.py
 
-        # Keep the process handle so redirected files are closed before reading them.
-        $process = Start-Process -FilePath python -ArgumentList "simple-program.py" -NoNewWindow -PassThru -RedirectStandardOutput output.log -RedirectStandardError error.log
-        Start-Sleep -Seconds 20
-        if (-not $process.HasExited)
+    - name: Run simple-program.py during 20 seconds
+      shell: pwsh
+      run: |
+        $ErrorActionPreference = 'Stop'
+        $python = (Get-Command python).Source
+        $process = Start-Process -FilePath $python -ArgumentList @('simple-program.py') -WorkingDirectory $PWD.Path -NoNewWindow -PassThru -RedirectStandardOutput output.log -RedirectStandardError error.log
+        try
         {
-            Stop-Process -Id $process.Id -Force
+            Start-Sleep -Seconds 20
+        }
+        finally
+        {
+            if (-not $process.HasExited)
+            {
+                $process.Kill($true)
+            }
             $process.WaitForExit()
         }
         if (Test-Path error.log)
         {
-            Get-Content error.log | Add-Content output.log
+            Get-Content -Raw error.log | Add-Content output.log
         }
 
     - name: Check output for errors
