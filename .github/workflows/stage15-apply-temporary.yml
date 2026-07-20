@@ -47,9 +47,7 @@ jobs:
       - name: Validate maintenance safeguards
         run: python3 .stage15/validate.py
 
-      - name: Commit final maintenance safeguards
-        env:
-          HEAD_BRANCH: ${{ github.head_ref }}
+      - name: Create and verify final commit
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
@@ -100,4 +98,9 @@ jobs:
           PY
           test ! -e .stage15
           test ! -e .github/workflows/stage15-apply-temporary.yml
-          git push origin "HEAD:$HEAD_BRANCH"
+          git rev-parse HEAD
+
+      - name: Push final commit
+        env:
+          HEAD_BRANCH: ${{ github.head_ref }}
+        run: git push origin "HEAD:$HEAD_BRANCH"
