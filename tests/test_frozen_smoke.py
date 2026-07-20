@@ -21,7 +21,7 @@ REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
 
 
 class FrozenSmokeContractTests(unittest.TestCase):
-    def test_required_ui_contracts_resolve_to_simplified_chinese(self):
+    def test_required_ui_contracts_resolve_expected_localized_values(self):
         translator = Translator(
             language="zh_CN",
             locales_dir=REPOSITORY_ROOT / "locales",
@@ -32,8 +32,21 @@ class FrozenSmokeContractTests(unittest.TestCase):
         ):
             translated = frozen_smoke._translated_contract(translator, contract)
             self.assertEqual(set(translated), set(contract))
-            for value in translated.values():
-                self.assertRegex(value, frozen_smoke.CJK_PATTERN)
+            self.assertEqual("DMC", translated["title"])
+            for name, value in translated.items():
+                if name != "title":
+                    self.assertRegex(value, frozen_smoke.CJK_PATTERN)
+
+    def test_language_independent_title_rejects_unexpected_brand(self):
+        translator = mock.Mock(return_value="Unexpected brand")
+        with self.assertRaisesRegex(
+            frozen_smoke.FrozenSmokeError,
+            "Language-independent UI value mismatch",
+        ):
+            frozen_smoke._translated_contract(
+                translator,
+                {"title": "app.configuration_title"},
+            )
 
     def test_actual_ui_sources_reference_the_frozen_contract_keys(self):
         with mock.patch.object(
@@ -145,6 +158,20 @@ class FrozenSmokeRunnerTests(unittest.TestCase):
             report = self._valid_report()
             report["frozen"] = False
             with self.assertRaisesRegex(FrozenSmokeRunnerError, "PyInstaller"):
+                validate_report(report, screenshot)
+
+    def test_report_validation_rejects_unexpected_brand(self):
+        with tempfile.TemporaryDirectory() as temp_name:
+            screenshot = Path(temp_name) / "smoke.png"
+            image = Image.new("RGB", (320, 480), "white")
+            image.putpixel((10, 10), (0, 0, 0))
+            image.save(screenshot)
+            report = self._valid_report()
+            report["configuration_ui"]["title"] = "Turing System Monitor"
+            with self.assertRaisesRegex(
+                FrozenSmokeRunnerError,
+                "configuration_ui.title",
+            ):
                 validate_report(report, screenshot)
 
     def test_isolated_environment_redirects_user_and_temp_paths(self):
