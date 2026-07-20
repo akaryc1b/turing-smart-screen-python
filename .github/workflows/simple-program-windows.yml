@@ -40,18 +40,26 @@ jobs:
     - name: Run simple-program.py during 20 seconds
       run: |
         # For tests there is no real HW: use simulated LCD mode
-        (Get-Content simple-program.py) -replace "^REVISION.*$","REVISION=`\"SIMU`\"" | Set-Content  simple-program.py
-        
-        # Run the program for 20s
-        Start-Process -NoNewWindow python3 simple-program.py -RedirectStandardOutput output.log -RedirectStandardError error.log
-        sleep 20
-        add-content output.log (get-content error.log)
+        (Get-Content simple-program.py) -replace "^REVISION.*$","REVISION=`\"SIMU`\"" | Set-Content simple-program.py
+
+        # Keep the process handle so redirected files are closed before reading them.
+        $process = Start-Process -FilePath python -ArgumentList "simple-program.py" -NoNewWindow -PassThru -RedirectStandardOutput output.log -RedirectStandardError error.log
+        Start-Sleep -Seconds 20
+        if (-not $process.HasExited)
+        {
+            Stop-Process -Id $process.Id -Force
+            $process.WaitForExit()
+        }
+        if (Test-Path error.log)
+        {
+            Get-Content error.log | Add-Content output.log
+        }
 
     - name: Check output for errors
       run: |
         echo "######## Output : ########"
         cat output.log
-        
+
         $SEL = Select-String -Path output.log -Pattern "error"
         if ($SEL -ne $null)
         {
