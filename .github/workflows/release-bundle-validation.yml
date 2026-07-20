@@ -11,14 +11,18 @@ on:
       - 'res/themes/3.5inchTheme2-zh-CN/**'
       - 'tools/build_release_manifest.py'
       - 'tools/validate_release_bundle.py'
+      - 'tools/validate_release_set.py'
       - 'tools/windows-installer/**'
+      - 'tests/test_publish_localized_release.py'
       - 'tests/test_release_candidate.py'
       - 'tests/test_release_validation.py'
+      - 'tests/test_repository_hygiene.py'
       - 'turing-system-monitor.spec'
       - 'turing-system-monitor-debug.spec'
       - '.github/workflows/generate-linux-packages.yml'
       - '.github/workflows/generate-windows-packages.yml'
       - '.github/workflows/generate-windows-packages-debug.yml'
+      - '.github/workflows/publish-localized-release.yml'
       - '.github/workflows/release-bundle-validation.yml'
       - '.github/workflows/release-candidate.yml'
   workflow_dispatch:
@@ -54,14 +58,19 @@ jobs:
           python -m py_compile \
             tools/build_release_manifest.py \
             tools/validate_release_bundle.py \
+            tools/validate_release_set.py \
+            tests/test_publish_localized_release.py \
             tests/test_release_candidate.py \
-            tests/test_release_validation.py
+            tests/test_release_validation.py \
+            tests/test_repository_hygiene.py
 
       - name: Run release validation tests
         run: |
           python -m unittest \
+            tests.test_publish_localized_release \
             tests.test_release_candidate \
             tests.test_release_validation \
+            tests.test_repository_hygiene \
             -v
 
   windows-bundles:
