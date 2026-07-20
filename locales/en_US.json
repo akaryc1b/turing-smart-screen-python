@@ -1,7 +1,7 @@
 {
   "app": {
     "name": "Turing System Monitor",
-    "configuration_title": "Turing System Monitor configuration",
+    "configuration_title": "dmc",
     "theme_editor_title": "Turing SysMon Theme Editor"
   },
   "common": {
@@ -39,7 +39,7 @@
     "weather_and_ping": "Weather\n& Ping",
     "open_themes_folder": "Open themes\nfolder",
     "edit_theme": "Edit theme",
-    "author": "Author: {name}",
+    "author": "Author: {name}\nakary汉化",
     "fan_tooltip": "If 'None' is selected, the CPU fan was not auto-detected.\nManually select your CPU fan from the list.\n\nFans missing from the list? Install the lm-sensors package, run 'sudo sensors-detect', then reboot."
   },
   "model": {
