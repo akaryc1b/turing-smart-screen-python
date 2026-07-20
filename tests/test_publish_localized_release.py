@@ -50,12 +50,17 @@ class LocalizedReleaseSetTests(unittest.TestCase):
             "catalogs": {},
             "theme": {},
         }
-        (self.root / "release-manifest.json").write_text(
-            json.dumps(manifest), encoding="utf-8"
-        )
+        self.manifest_path = self.root / "release-manifest.json"
+        self.manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
 
     def tearDown(self):
         self.temp_dir.cleanup()
+
+    def _read_manifest(self):
+        return json.loads(self.manifest_path.read_text(encoding="utf-8"))
+
+    def _write_manifest(self, manifest):
+        self.manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
 
     def test_complete_release_set_is_accepted(self):
         manifest = validate_release_set(self.root, TEST_VERSION, TEST_COMMIT)
@@ -78,10 +83,17 @@ class LocalizedReleaseSetTests(unittest.TestCase):
             validate_release_set(self.root, TEST_VERSION, TEST_COMMIT)
 
     def test_manifest_version_and_commit_must_match_request(self):
+        manifest = self._read_manifest()
+        manifest["version"] = "3.10.1"
+        self._write_manifest(manifest)
         with self.assertRaisesRegex(ReleaseSetError, "version mismatch"):
-            validate_release_set(self.root, "3.10.1", TEST_COMMIT)
+            validate_release_set(self.root, TEST_VERSION, TEST_COMMIT)
+
+        manifest["version"] = TEST_VERSION
+        manifest["commit"] = "2" * 40
+        self._write_manifest(manifest)
         with self.assertRaisesRegex(ReleaseSetError, "commit mismatch"):
-            validate_release_set(self.root, TEST_VERSION, "2" * 40)
+            validate_release_set(self.root, TEST_VERSION, TEST_COMMIT)
 
 
 class LocalizedReleaseWorkflowPolicyTests(unittest.TestCase):
