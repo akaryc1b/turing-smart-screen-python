@@ -8,6 +8,10 @@ TEMPORARY_VALIDATION_FILES = (
     ".stage15/yaml.py",
     ".stage15/validate.py",
 )
+TARGET_HYGIENE_TEST = (
+    "tests.test_repository_hygiene.RepositoryArtifactHygieneTests."
+    "test_generated_outputs_and_temporary_workflows_are_not_tracked"
+)
 
 
 def untrack_temporary_validation_files():
@@ -18,18 +22,10 @@ def untrack_temporary_validation_files():
     )
 
 
-def run_tests():
+def run_command(test_names, success_tail):
     env = os.environ.copy()
     env["PYTHONPATH"] = str(Path(".stage15").resolve())
-    command = [
-        sys.executable,
-        "-m",
-        "unittest",
-        "tests.test_repository_hygiene",
-        "tests.test_localization_maintenance",
-        "tests.test_dependency_review_policy",
-        "-v",
-    ]
+    command = [sys.executable, "-m", "unittest", *test_names, "-v"]
     result = subprocess.run(
         command,
         check=False,
@@ -39,9 +35,21 @@ def run_tests():
     )
     output = (result.stdout + result.stderr).splitlines()
     if result.returncode:
-        print("\n".join(output[-80:]))
+        print("\n".join(output))
         raise SystemExit(result.returncode)
-    print("\n".join(output[-5:]))
+    print("\n".join(output[-success_tail:]))
+
+
+def run_tests():
+    run_command([TARGET_HYGIENE_TEST], success_tail=3)
+    run_command(
+        [
+            "tests.test_repository_hygiene",
+            "tests.test_localization_maintenance",
+            "tests.test_dependency_review_policy",
+        ],
+        success_tail=5,
+    )
 
 
 def validate_workflows():
