@@ -133,14 +133,21 @@ class RealCatalogTests(unittest.TestCase):
 
     def test_configurator_core_labels_are_translated(self):
         translator = Translator("zh_CN", locales_dir=REAL_LOCALES_DIR)
+        self.assertEqual("dmc", translator("app.configuration_title"))
         self.assertEqual("显示屏配置", translator("config.display_section"))
         self.assertEqual("硬件监控方式", translator("config.hardware_monitoring"))
         self.assertEqual("天气与 Ping 配置", translator("weather.window_title"))
         self.assertEqual("简体中文", translator("language.chinese_simplified"))
 
+    def test_configurator_title_is_language_independent(self):
+        for locale_code in ("en_US", "zh_CN"):
+            with self.subTest(locale_code=locale_code):
+                translator = Translator(locale_code, locales_dir=REAL_LOCALES_DIR)
+                self.assertEqual("dmc", translator("app.configuration_title"))
+
     def test_real_catalog_named_placeholders_render(self):
         translator = Translator("zh_CN", locales_dir=REAL_LOCALES_DIR)
-        self.assertEqual("作者：@tester", translator("config.author", name="@tester"))
+        self.assertEqual("作者：@tester\nakary汉化", translator("config.author", name="@tester"))
         self.assertIn("401", translator("weather.error_http", status=401))
 
 
