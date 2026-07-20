@@ -1,24 +1,23 @@
-name: Temporary stage 15 maintenance apply
+name: Temporary stage 15 tree metadata
 
 on:
   pull_request:
     paths:
-      - '.stage15/**'
       - '.github/workflows/stage15-apply-temporary.yml'
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
-  group: temporary-stage15-apply-${{ github.event.pull_request.number }}
+  group: temporary-stage15-tree-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
 jobs:
-  apply-maintenance:
+  export-tree:
     runs-on: ubuntu-slim
-    timeout-minutes: 15
+    timeout-minutes: 5
     steps:
-      - name: Check out maintenance branch
+      - name: Resolve current commit and tree
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPOSITORY: ${{ github.repository }}
@@ -28,79 +27,7 @@ jobs:
           git init . >/dev/null
           git config http.https://github.com/.extraheader "AUTHORIZATION: basic $auth_header"
           git remote add origin "https://github.com/$GH_REPOSITORY.git"
-          git fetch --no-tags --depth=1 origin \
-            "refs/heads/$HEAD_BRANCH:refs/remotes/origin/$HEAD_BRANCH" \
-            >/dev/null 2>&1
-          git checkout --force -B "$HEAD_BRANCH" \
-            "refs/remotes/origin/$HEAD_BRANCH" >/dev/null 2>&1
-
-      - name: Reconstruct and apply maintenance payload
-        run: |
-          cat .stage15/final.part-* > /tmp/stage15-final.b64
-          base64 --decode /tmp/stage15-final.b64 > /tmp/stage15-final.tar.gz
-          echo 'b4b350faa4d64a4eea6bb0538a556e89ff8d15d76fd103f2f529fc037f433488  /tmp/stage15-final.tar.gz' \
-            | sha256sum --check --strict
-          tar -xzf /tmp/stage15-final.tar.gz
-          git rm -f .stage15/final.part-* \
-            .github/workflows/stage15-apply-temporary.yml
-
-      - name: Validate maintenance safeguards
-        run: python3 .stage15/validate.py
-
-      - name: Create and verify final commit
-        run: |
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -A
-          git commit -m 'chore: enforce final localization maintenance safeguards'
-          git fetch --no-tags --depth=1 origin \
-            'refs/heads/agent/zh-cn-coverage-audit:refs/remotes/origin/agent/zh-cn-coverage-audit' \
-            >/dev/null 2>&1
-          python3 - <<'PY'
-          import subprocess
-
-          expected = {
-              '.github/workflows/codeql.yml',
-              '.github/workflows/generate-linux-packages.yml',
-              '.github/workflows/generate-windows-packages-debug.yml',
-              '.github/workflows/generate-windows-packages.yml',
-              '.github/workflows/i18n.yml',
-              '.github/workflows/lint-flake8.yml',
-              '.github/workflows/release-bundle-validation.yml',
-              '.github/workflows/simple-program-linux.yml',
-              '.github/workflows/simple-program-macos.yml',
-              '.github/workflows/simple-program-windows.yml',
-              '.github/workflows/system-monitor-linux.yml',
-              '.github/workflows/system-monitor-macos.yml',
-              '.github/workflows/system-monitor-windows.yml',
-              '.github/workflows/themes-screenshot-on-pr.yml',
-              '.github/workflows/themes-screenshot-on-push.yml',
-              'README.zh-CN.md',
-              'docs/zh-CN/README.md',
-              'docs/zh-CN/final-maintenance.md',
-              'docs/zh-CN/upstream-sync.md',
-              'tests/test_repository_hygiene.py',
-          }
-          output = subprocess.check_output(
-              [
-                  'git', 'diff', '--name-only',
-                  'refs/remotes/origin/agent/zh-cn-coverage-audit', 'HEAD',
-              ],
-              text=True,
-          )
-          actual = set(output.splitlines())
-          if actual != expected:
-              raise SystemExit(
-                  f'Unexpected final diff; missing={sorted(expected - actual)}, '
-                  f'extra={sorted(actual - expected)}'
-              )
-          print(f'Validated final diff with {len(actual)} files')
-          PY
-          test ! -e .stage15
-          test ! -e .github/workflows/stage15-apply-temporary.yml
-          git rev-parse HEAD
-
-      - name: Push final commit
-        env:
-          HEAD_BRANCH: ${{ github.head_ref }}
-        run: git push origin "HEAD:$HEAD_BRANCH"
+          git fetch --filter=blob:none --no-tags --depth=1 origin \
+            "refs/heads/$HEAD_BRANCH" >/dev/null 2>&1
+          echo "CURRENT_COMMIT=$(git rev-parse FETCH_HEAD)"
+          echo "CURRENT_TREE=$(git rev-parse 'FETCH_HEAD^{tree}')"
