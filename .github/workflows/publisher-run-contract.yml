@@ -19,11 +19,6 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: Check out repository
-        uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-
       - name: Inspect RC run API contract
         env:
           GH_TOKEN: ${{ github.token }}
@@ -50,11 +45,3 @@ jobs:
 
           gh api "repos/$GITHUB_REPOSITORY/actions/runs/$RUN_ID/artifacts?per_page=100" \
             --jq '[.artifacts[] | {name, expired, size_in_bytes}]'
-
-          git fetch origin main --tags --force
-          run_sha="$(jq -r '.head_sha' <<<"$run_json")"
-          if git merge-base --is-ancestor "$run_sha" origin/main; then
-            echo "ancestor_check=true"
-          else
-            echo "ancestor_check=false"
-          fi
