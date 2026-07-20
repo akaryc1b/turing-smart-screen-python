@@ -7,7 +7,6 @@ on:
       - '.github/workflows/stage15-apply-temporary.yml'
 
 permissions:
-  actions: write
   contents: write
 
 concurrency:
@@ -48,35 +47,57 @@ jobs:
       - name: Validate maintenance safeguards
         run: python3 .stage15/validate.py
 
-      - name: Package validated source
+      - name: Commit final maintenance safeguards
+        env:
+          HEAD_BRANCH: ${{ github.head_ref }}
         run: |
-          tar -czf /tmp/stage15-validated-source.tar.gz \
-            .github/workflows/codeql.yml \
-            .github/workflows/generate-linux-packages.yml \
-            .github/workflows/generate-windows-packages-debug.yml \
-            .github/workflows/generate-windows-packages.yml \
-            .github/workflows/i18n.yml \
-            .github/workflows/lint-flake8.yml \
-            .github/workflows/release-bundle-validation.yml \
-            .github/workflows/simple-program-linux.yml \
-            .github/workflows/simple-program-macos.yml \
-            .github/workflows/simple-program-windows.yml \
-            .github/workflows/system-monitor-linux.yml \
-            .github/workflows/system-monitor-macos.yml \
-            .github/workflows/system-monitor-windows.yml \
-            .github/workflows/themes-screenshot-on-pr.yml \
-            .github/workflows/themes-screenshot-on-push.yml \
-            README.zh-CN.md \
-            docs/zh-CN/README.md \
-            docs/zh-CN/final-maintenance.md \
-            docs/zh-CN/upstream-sync.md \
-            tests/test_repository_hygiene.py
-          sha256sum /tmp/stage15-validated-source.tar.gz
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'chore: enforce final localization maintenance safeguards'
+          git fetch --no-tags --depth=1 origin \
+            'refs/heads/agent/zh-cn-coverage-audit:refs/remotes/origin/agent/zh-cn-coverage-audit' \
+            >/dev/null 2>&1
+          python3 - <<'PY'
+          import subprocess
 
-      - name: Upload validated source
-        uses: actions/upload-artifact@v7
-        with:
-          name: stage15-validated-source
-          path: /tmp/stage15-validated-source.tar.gz
-          if-no-files-found: error
-          retention-days: 1
+          expected = {
+              '.github/workflows/codeql.yml',
+              '.github/workflows/generate-linux-packages.yml',
+              '.github/workflows/generate-windows-packages-debug.yml',
+              '.github/workflows/generate-windows-packages.yml',
+              '.github/workflows/i18n.yml',
+              '.github/workflows/lint-flake8.yml',
+              '.github/workflows/release-bundle-validation.yml',
+              '.github/workflows/simple-program-linux.yml',
+              '.github/workflows/simple-program-macos.yml',
+              '.github/workflows/simple-program-windows.yml',
+              '.github/workflows/system-monitor-linux.yml',
+              '.github/workflows/system-monitor-macos.yml',
+              '.github/workflows/system-monitor-windows.yml',
+              '.github/workflows/themes-screenshot-on-pr.yml',
+              '.github/workflows/themes-screenshot-on-push.yml',
+              'README.zh-CN.md',
+              'docs/zh-CN/README.md',
+              'docs/zh-CN/final-maintenance.md',
+              'docs/zh-CN/upstream-sync.md',
+              'tests/test_repository_hygiene.py',
+          }
+          output = subprocess.check_output(
+              [
+                  'git', 'diff', '--name-only',
+                  'refs/remotes/origin/agent/zh-cn-coverage-audit', 'HEAD',
+              ],
+              text=True,
+          )
+          actual = set(output.splitlines())
+          if actual != expected:
+              raise SystemExit(
+                  f'Unexpected final diff; missing={sorted(expected - actual)}, '
+                  f'extra={sorted(actual - expected)}'
+              )
+          print(f'Validated final diff with {len(actual)} files')
+          PY
+          test ! -e .stage15
+          test ! -e .github/workflows/stage15-apply-temporary.yml
+          git push origin "HEAD:$HEAD_BRANCH"
